@@ -1,0 +1,73 @@
+body {
+  background-color: black;
+  margin: 0;
+  font-family: "Open Sans Condensed", sans-serif;
+}
+
+#chat-container {
+  overflow: hidden;
+  height: 100vh;
+}
+
+#chat {
+  display: flex;
+  color: #eee;
+  flex-direction: column-reverse;
+  margin-bottom: 100vh;
+}
+
+#chat > div {
+  padding: 3px 1px 3px 6px;
+  font-size: 32px;
+  line-height: 35px;
+  border-bottom: #444 solid 1px;
+}
+#chat > div:nth-child(odd) {
+  background-color: #111;
+}
+
+#chat .mention-fragment {
+  padding: 0;
+}
+
+#chat img {
+  max-width: 100%;
+  max-height: 50vh;
+  color: white;
+  font-weight: 300;
+  margin: 0;
+  vertical-align: baseline;
+}
+
+#chat .chat-colon:after {
+  content: ': ';
+}
+
+#chat .chat-author {
+  color: green;
+  font-weight: 700;
+}
+
+#chat .chat-author.moderator {
+	color: #8383f9;
+}
+
+#chat a {
+  color: inherit;
+}
+
+::-webkit-scrollbar {
+  display: none;
+}
+
+#settings-wheel {
+  position: absolute;
+  font-size: 20px;
+  right: 5px;
+  bottom: 5px;
+  color: rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+}
+#settings-wheel:hover {
+  color: rgba(255, 255, 255, 1);
+}
