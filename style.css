@@ -68,7 +68,7 @@ body {
 }
 
 #chat .chat-user {
-  color: green;
+  color: #008000;
   color: var(--user-color);
   font-weight: 700;
 }
@@ -110,7 +110,7 @@ body {
   border: 3px solid #444;
   border-color: var(--separator-color);
   background-color: black;
-  border-color: var(--background-color);
+  background-color: var(--background-color);
 }
 
 .reverse-order #settings {
@@ -125,13 +125,13 @@ body {
 
 #settings h3 {
   padding: 5px 20px;
-  background-color: black;
+  background-color: #000000;
   border-color: var(--background-color);
   margin: 0;
 }
 
 #settings > div {
-  background-color: #111;
+  background-color: #111111;
   background-color: var(--odd-background-color);
   padding: 10px;
 }
@@ -150,7 +150,7 @@ body {
 #settings .subfield {
   margin-top: 5px;
   margin-left: 40px;
-  border-left: 5px solid #eee;
+  border-left: 5px solid #eeeeee;
   border-color: var(--text-color);
   padding-left: 10px;
 }
@@ -158,11 +158,12 @@ body {
 #settings input {
   font-size: 20px;
   vertical-align: bottom;
+  color: inherit;
 }
 
 #settings input[type="checkbox"] {
   appearance: none;
-  border: 2px solid #eee;
+  border: 2px solid #eeeeee;
   border-color: var(--text-color);
   text-align: center;
   width: 32px;
@@ -177,11 +178,10 @@ body {
 
 #settings input[type="number"] {
   height: 32px;
-  border: 2px solid #eee;
+  border: 2px solid #eeeeee;
   border-color: var(--text-color);
   background-color: black;
   background-color: var(--background-color);
-  color: #eee;
 }
 
 #settings input[type="number"]:invalid {
@@ -190,7 +190,7 @@ body {
 
 #settings input[type="color"] {
   appearance: none;
-  border: 2px solid #eee;
+  border: 2px solid #eeeeee;
   border-color: var(--text-color);
   background-color: black;
   background-color: var(--background-color);

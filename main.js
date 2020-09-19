@@ -4,7 +4,7 @@ var options = {
 		secure: true,
 		reconnect: true
 	},
-	channels: [ "emongg" ]
+	channels: [ "loadingreadyrun" ]
 };
 
 var chat = document.getElementById('chat'),
@@ -39,14 +39,14 @@ document.getElementById('settings-new-messages-on-top').addEventListener('click'
 	localStorage.setItem('new-messages-on-top', newMessagesOnTop);
 	document.body.classList.toggle('reverse-order', !newMessagesOnTop);
 	scrollDistance = scrollReference = 0;
-	chatContainer.scrollTop = newMessagesOnTop ? 0 : chatContainer.scrollTopMax;
+	chatContainer.scrollTop = newMessagesOnTop ? 0 : chatContainer.scrollHeight - window.innerHeight;
 });
 document.getElementById('settings-smooth-scroll').checked = smoothScroll;
 document.getElementById('settings-smooth-scroll').addEventListener('click', () => {
 	smoothScroll = !smoothScroll;
 	localStorage.setItem('smooth-scroll', smoothScroll);
 	scrollDistance = scrollReference = 0;
-	chatContainer.scrollTop = newMessagesOnTop ? 0 : chatContainer.scrollTopMax;
+	chatContainer.scrollTop = newMessagesOnTop ? 0 : chatContainer.scrollHeight - window.innerHeight;
 	document.getElementById('settings-smooth-scroll').parentNode.nextElementSibling.classList.toggle('hidden', !smoothScroll);
 });
 if (smoothScroll) {
@@ -84,7 +84,7 @@ function scrollUp(now) {
 		var currentStep = scrollDuration / (now - lastFrame);
 		scrollDistance -= scrollReference / currentStep;
 		scrollDistance = Math.max(scrollDistance, 0);
-		chatContainer.scrollTop = Math.round(newMessagesOnTop ? scrollDistance : chatContainer.scrollTopMax - scrollDistance);
+		chatContainer.scrollTop = Math.round(newMessagesOnTop ? scrollDistance : chatContainer.scrollHeight - window.innerHeight - scrollDistance);
 	}
 	lastFrame = now;
 	window.requestAnimationFrame(scrollUp);
@@ -120,11 +120,11 @@ function handleChat(channel, userstate, message, self) {
 	// Calculate height for smooth scrolling
 	scrollReference = scrollDistance += chatLine.scrollHeight;
 	if (!newMessagesOnTop && !smoothScroll) {
-		chatContainer.scrollTop = chatContainer.scrollTopMax;
+		chatContainer.scrollTop = chatContainer.scrollHeight - window.innerHeight;
 	}
 
 	// Check whether we can remove the two oldest messages
-	if (chat.childNodes.length > 2 && window.innerHeight + scrollDistance < chat.scrollHeight - chat.firstChild.scrollHeight - chat.childNodes[1].scrollHeight) {
+	while (chat.childNodes.length > 2 && window.innerHeight + scrollDistance < chat.scrollHeight - chat.firstChild.scrollHeight - chat.childNodes[1].scrollHeight) {
 		chat.firstChild.remove();
 		chat.firstChild.remove();
 	}
