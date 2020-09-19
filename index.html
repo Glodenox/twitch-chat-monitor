@@ -7,8 +7,33 @@
     <link href="style.css" rel="stylesheet" type="text/css">
   </head>
   <body>
-    <!-- other controls go here and are positioned as absolute -->
-    <div id="settings-wheel">⚙ Settings</div>
+    <div id="curtain" class="hidden">
+      <p>Chat hidden - press Ctrl+Shift+H to reveal</p>
+    </div>
+    <div id="settings-wheel" title="Ctrl+Shift+S">⚙ Settings</div>
+    <div id="settings" class="hidden">
+      <h2>Settings</h2>
+      <div>
+        <h3>Style</h3>
+        <div class="fields">
+          <div>Background<br/><input type="color" id="settings-background-color"/></div>
+          <div>Odd rows<br/><input type="color" id="settings-odd-background-color"/></div>
+          <div>Separator<br/><input type="color" id="settings-separator-color"/></div>
+          <div>Text<br/><input type="color" id="settings-text-color"/></div>
+          <div>User<br/><input type="color" id="settings-user-color"/></div>
+          <div>Moderator<br/><input type="color" id="settings-moderator-color"/></div>
+        </div>
+      </div>
+      <div>
+        <h3>Behavior</h3>
+        <div><label><input type="checkbox" id="settings-new-messages-on-top"> New messages appear at the top</label></div>
+        <div>
+          <label><input type="checkbox" id="settings-smooth-scroll"> Smooth scrolling</label>
+          <div class="subfield hidden"><label>Time allowed for message to appear: <input type="number" size="5" max="10000" min="1" id="settings-smooth-scroll-duration" /> (milliseconds)</label></div>
+        </div>
+      </div>
+    </div>
+
     <div id="chat-container">
       <div id="chat"></div>
     </div>

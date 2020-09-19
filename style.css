@@ -1,7 +1,25 @@
+/* Make sure to enter full rgb definitions here as the color input fields don't accept other values */
+:root {
+  --background-color: #000000;
+  --odd-background-color: #111111;
+  --separator-color: #444444;
+  --text-color: #eeeeee;
+  --user-color: #008000;
+  --moderator-color: #8383f9;
+}
+
 body {
   background-color: black;
+  background-color: var(--background-color);
   margin: 0;
+  color: #eee;
+  color: var(--text-color);
+  font-size: 32px;
   font-family: "Open Sans Condensed", sans-serif;
+}
+
+.hidden {
+  display: none;
 }
 
 #chat-container {
@@ -11,19 +29,26 @@ body {
 
 #chat {
   display: flex;
-  color: #eee;
   flex-direction: column-reverse;
+  margin-top: 0;
   margin-bottom: 100vh;
+}
+
+.reverse-order #chat {
+  flex-direction: column;
+  margin-top: 100vh;
+  margin-bottom: 0;
 }
 
 #chat > div {
   padding: 3px 1px 3px 6px;
-  font-size: 32px;
   line-height: 35px;
   border-bottom: #444 solid 1px;
+  border-color: var(--separator-color);
 }
 #chat > div:nth-child(odd) {
   background-color: #111;
+  background-color: var(--odd-background-color);
 }
 
 #chat .mention-fragment {
@@ -33,7 +58,6 @@ body {
 #chat img {
   max-width: 100%;
   max-height: 50vh;
-  color: white;
   font-weight: 300;
   margin: 0;
   vertical-align: baseline;
@@ -43,21 +67,19 @@ body {
   content: ': ';
 }
 
-#chat .chat-author {
+#chat .chat-user {
   color: green;
+  color: var(--user-color);
   font-weight: 700;
 }
 
-#chat .chat-author.moderator {
-	color: #8383f9;
+#chat .chat-user.moderator {
+  color: #8383f9;
+  color: var(--moderator-color);
 }
 
 #chat a {
   color: inherit;
-}
-
-::-webkit-scrollbar {
-  display: none;
 }
 
 #settings-wheel {
@@ -65,9 +87,114 @@ body {
   font-size: 20px;
   right: 5px;
   bottom: 5px;
-  color: rgba(255, 255, 255, 0.3);
+  opacity: 0.3;
   cursor: pointer;
 }
 #settings-wheel:hover {
-  color: rgba(255, 255, 255, 1);
+  opacity: 1;
+}
+
+.reverse-order #settings-wheel {
+  top: 5px;
+  bottom: auto;
+}
+
+#settings {
+  position: absolute;
+  right: 20px;
+  bottom: 30px;
+  left: 20px;
+  padding: 20px;
+  max-height: 70vh;
+  overflow-y: auto;
+  border: 3px solid #444;
+  border-color: var(--separator-color);
+  background-color: black;
+  border-color: var(--background-color);
+}
+
+.reverse-order #settings {
+  top: 30px;
+  bottom: auto;
+}
+
+#settings h2 {
+  margin-top: 0;
+  text-align: center;
+}
+
+#settings h3 {
+  padding: 5px 20px;
+  background-color: black;
+  border-color: var(--background-color);
+  margin: 0;
+}
+
+#settings > div {
+  background-color: #111;
+  background-color: var(--odd-background-color);
+  padding: 10px;
+}
+
+#settings .fields {
+  display: flex;
+  text-align: center;
+  justify-content: space-evenly;
+  flex-wrap: wrap;
+}
+#settings .fields > div {
+  min-width: 120px;
+  padding: 10px;
+}
+
+#settings .subfield {
+  margin-top: 5px;
+  margin-left: 40px;
+  border-left: 5px solid #eee;
+  border-color: var(--text-color);
+  padding-left: 10px;
+}
+
+#settings input {
+  font-size: 20px;
+  vertical-align: bottom;
+}
+
+#settings input[type="checkbox"] {
+  appearance: none;
+  border: 2px solid #eee;
+  border-color: var(--text-color);
+  text-align: center;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+}
+
+#settings input[type="checkbox"]:checked::after {
+  content: "\2713";
+  font-weight: 700;
+}
+
+#settings input[type="number"] {
+  height: 32px;
+  border: 2px solid #eee;
+  border-color: var(--text-color);
+  background-color: black;
+  background-color: var(--background-color);
+  color: #eee;
+}
+
+#settings input[type="number"]:invalid {
+  border-color: red;
+}
+
+#settings input[type="color"] {
+  appearance: none;
+  border: 2px solid #eee;
+  border-color: var(--text-color);
+  background-color: black;
+  background-color: var(--background-color);
+  padding: 5px;
+  height: 32px;
+  cursor: pointer;
 }
