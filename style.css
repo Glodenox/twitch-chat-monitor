@@ -1,13 +1,3 @@
-/* Make sure to enter full rgb definitions here as the color input fields don't accept other values */
-:root {
-  --background-color: #000000;
-  --odd-background-color: #111111;
-  --separator-color: #444444;
-  --text-color: #eeeeee;
-  --user-color: #008000;
-  --moderator-color: #8383f9;
-}
-
 body {
   background-color: black;
   background-color: var(--background-color);
@@ -68,7 +58,7 @@ body {
 }
 
 #chat .chat-user {
-  color: #008000;
+  color: green;
   color: var(--user-color);
   font-weight: 700;
 }
@@ -84,7 +74,6 @@ body {
 
 #settings-wheel {
   position: absolute;
-  font-size: 20px;
   right: 5px;
   bottom: 5px;
   opacity: 0.3;
@@ -102,8 +91,9 @@ body {
 #settings {
   position: absolute;
   right: 20px;
-  bottom: 30px;
+  bottom: 32px;
   left: 20px;
+  margin-bottom: 15px;
   padding: 20px;
   max-height: 70vh;
   overflow-y: auto;
@@ -125,13 +115,13 @@ body {
 
 #settings h3 {
   padding: 5px 20px;
-  background-color: #000000;
+  background-color: #000;
   border-color: var(--background-color);
   margin: 0;
 }
 
 #settings > div {
-  background-color: #111111;
+  background-color: #111;
   background-color: var(--odd-background-color);
   padding: 10px;
 }
@@ -150,20 +140,20 @@ body {
 #settings .subfield {
   margin-top: 5px;
   margin-left: 40px;
-  border-left: 5px solid #eeeeee;
+  border-left: 5px solid #eee;
   border-color: var(--text-color);
   padding-left: 10px;
 }
 
 #settings input {
-  font-size: 20px;
+  font-size: 0.625em;
   vertical-align: bottom;
   color: inherit;
 }
 
 #settings input[type="checkbox"] {
   appearance: none;
-  border: 2px solid #eeeeee;
+  border: 2px solid #eee;
   border-color: var(--text-color);
   text-align: center;
   width: 32px;
@@ -178,7 +168,7 @@ body {
 
 #settings input[type="number"] {
   height: 32px;
-  border: 2px solid #eeeeee;
+  border: 2px solid #eee;
   border-color: var(--text-color);
   background-color: black;
   background-color: var(--background-color);
@@ -190,7 +180,7 @@ body {
 
 #settings input[type="color"] {
   appearance: none;
-  border: 2px solid #eeeeee;
+  border: 2px solid #eee;
   border-color: var(--text-color);
   background-color: black;
   background-color: var(--background-color);

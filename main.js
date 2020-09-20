@@ -4,60 +4,72 @@ var options = {
 		secure: true,
 		reconnect: true
 	},
-	channels: [ "loadingreadyrun" ]
+	channels: [ defaultSettings.channel ]
 };
 
 var chat = document.getElementById('chat'),
 	chatContainer = document.getElementById('chat-container'),
 	scrollDistance = 0, // How many pixels are we currently still hiding?
-	scrollReference = 0, // Distance when we started scrolling
-	newMessagesOnTop = getConfig('new-messages-on-top', 'true') == 'true',
-	smoothScroll = getConfig('smooth-scroll', 'true') == 'true',
-	scrollDuration = parseInt(getConfig('smooth-scroll-duration', 1000)), // Time in milliseconds allowed for a message to appear
-	styles = { 'background-color': '', 'odd-background-color': '', 'separator-color': '', 'text-color': '', 'user-color': '', 'moderator-color': '' };
-Object.keys(styles).forEach(key => {
-	styles[key] = getConfig(key, getComputedStyle(document.body).getPropertyValue('--' + key).trim());
-	document.body.style.setProperty('--' + key, styles[key]);
-});
+	scrollReference = 0; // Distance when we started scrolling;
+
+/* Store settings with a local cache. Storing these variables directly in localStorage would remove the variable's type information */
+var Settings = function() {
+	// Clone default settings so they can be reset
+	var settings = Object.assign({}, defaultSettings);
+	// Restore previous settings
+	var previousSettings = localStorage.getItem('config') !== null ? JSON.parse(localStorage.getItem('config')) : {};
+	Object.keys(previousSettings).forEach(key => settings[key] = previousSettings[key]);
+	// Store all settings as CSS variables as well
+	Object.keys(settings).forEach(key => document.body.style.setProperty('--' + key, settings[key]));
+
+	var update = (key, value) => {
+		settings[key] = value;
+		localStorage.setItem('config', JSON.stringify(settings));
+		document.body.style.setProperty('--' + key, value);
+	};
+	return {
+		'get': (key) => settings[key],
+		'set': update,
+		'toggle': (key) => update(key, !settings[key]),
+		'reset': () => {
+			Object.assign(settings, defaultSettings);
+			localStorage.setItem('config', JSON.stringify(defaultSettings));
+			console.log('Config reset');
+		}
+	}
+}();
 
 /* Interface interactions */
 document.getElementById('settings-wheel').addEventListener('click', () => document.getElementById('settings').classList.toggle('hidden'));
 // Style
-Object.keys(styles).forEach(key => {
-	document.getElementById('settings-' + key).value = styles[key];
-	document.getElementById('settings-' + key).addEventListener('change', (e) => {
-		styles[key] = e.target.value;
-		document.body.style.setProperty('--' + key, e.target.value);
-		localStorage.setItem(key, e.target.value);
-	});
+['background-color', 'odd-background-color', 'separator-color', 'text-color', 'user-color', 'moderator-color'].forEach(key => {
+	document.getElementById('settings-' + key).value = Settings.get(key);
+	document.getElementById('settings-' + key).addEventListener('change', (e) => Settings.set(key, e.target.value));
 });
 // Behavior
-document.body.classList.toggle('reverse-order', !newMessagesOnTop);
-document.getElementById('settings-new-messages-on-top').checked = newMessagesOnTop;
+document.body.classList.toggle('reverse-order', !Settings.get('new-messages-on-top'));
+document.getElementById('settings-new-messages-on-top').checked = Settings.get('new-messages-on-top');
 document.getElementById('settings-new-messages-on-top').addEventListener('click', () => {
-	newMessagesOnTop = !newMessagesOnTop;
-	localStorage.setItem('new-messages-on-top', newMessagesOnTop);
-	document.body.classList.toggle('reverse-order', !newMessagesOnTop);
+	Settings.toggle('new-messages-on-top');
+	document.body.classList.toggle('reverse-order', !Settings.get('new-messages-on-top'));
 	scrollDistance = scrollReference = 0;
-	chatContainer.scrollTop = newMessagesOnTop ? 0 : chatContainer.scrollHeight - window.innerHeight;
+	chatContainer.scrollTop = Settings.get('new-messages-on-top') ? 0 : chatContainer.scrollHeight - window.innerHeight;
 });
-document.getElementById('settings-smooth-scroll').checked = smoothScroll;
+document.getElementById('settings-smooth-scroll').checked = Settings.get('smooth-scroll');
 document.getElementById('settings-smooth-scroll').addEventListener('click', () => {
-	smoothScroll = !smoothScroll;
-	localStorage.setItem('smooth-scroll', smoothScroll);
+	Settings.toggle('smooth-scroll');
 	scrollDistance = scrollReference = 0;
-	chatContainer.scrollTop = newMessagesOnTop ? 0 : chatContainer.scrollHeight - window.innerHeight;
-	document.getElementById('settings-smooth-scroll').parentNode.nextElementSibling.classList.toggle('hidden', !smoothScroll);
+	chatContainer.scrollTop = Settings.get('new-messages-on-top') ? 0 : chatContainer.scrollHeight - window.innerHeight;
+	document.getElementById('settings-smooth-scroll').parentNode.nextElementSibling.classList.toggle('hidden', !Settings.get('smooth-scroll'));
 });
-if (smoothScroll) {
+if (Settings.get('smooth-scroll')) {
 	document.getElementById('settings-smooth-scroll').parentNode.nextElementSibling.classList.remove('hidden');
 }
-document.getElementById('settings-smooth-scroll-duration').value = scrollDuration;
+document.getElementById('settings-smooth-scroll-duration').value = Settings.get('smooth-scroll-duration');
 document.getElementById('settings-smooth-scroll-duration').addEventListener('input', (e) => {
 	var duration = parseInt(e.target.value);
 	if (!isNaN(duration) && e.target.validity.valid) {
-		scrollDuration = duration;
-		localStorage.setItem('smooth-scroll-duration', scrollDuration);
+		Settings.set('smooth-scroll-duration', duration);
 	}
 });
 
@@ -79,22 +91,17 @@ client.connect();
 // Continually scroll up, in a way to make the comments readable
 var lastFrame = +new Date();
 function scrollUp(now) {
-	if (smoothScroll && scrollDistance > 0) {
+	if (Settings.get('smooth-scroll') && scrollDistance > 0) {
 		// Estimate how far along we are in scrolling in the current scroll reference
-		var currentStep = scrollDuration / (now - lastFrame);
+		var currentStep = Settings.get('smooth-scroll-duration') / (now - lastFrame);
 		scrollDistance -= scrollReference / currentStep;
 		scrollDistance = Math.max(scrollDistance, 0);
-		chatContainer.scrollTop = Math.round(newMessagesOnTop ? scrollDistance : chatContainer.scrollHeight - window.innerHeight - scrollDistance);
+		chatContainer.scrollTop = Math.round(Settings.get('new-messages-on-top') ? scrollDistance : chatContainer.scrollHeight - window.innerHeight - scrollDistance);
 	}
 	lastFrame = now;
 	window.requestAnimationFrame(scrollUp);
 }
 window.requestAnimationFrame(scrollUp);
-
-function getConfig(key, defaultValue) {
-	var item = localStorage.getItem(key);
-	return item === null ? defaultValue : item;
-}
 
 /* Inspirated by https://gist.github.com/AlcaDesign/742d8cb82e3e93ad4205 */
 function handleChat(channel, userstate, message, self) {
@@ -119,7 +126,7 @@ function handleChat(channel, userstate, message, self) {
 
 	// Calculate height for smooth scrolling
 	scrollReference = scrollDistance += chatLine.scrollHeight;
-	if (!newMessagesOnTop && !smoothScroll) {
+	if (!Settings.get('new-messages-on-top') && !Settings.get('smooth-scroll')) {
 		chatContainer.scrollTop = chatContainer.scrollHeight - window.innerHeight;
 	}
 
