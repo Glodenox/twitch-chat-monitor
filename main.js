@@ -14,13 +14,13 @@ var chat = document.getElementById('chat'),
 
 /* Store settings with a local cache. Storing these variables directly in localStorage would remove the variable's type information */
 var Settings = function() {
-	// Clone default settings so they can be reset
+	// Clone default settings so they can be used to reset
 	var settings = Object.assign({}, defaultSettings);
 	// Restore previous settings
 	var previousSettings = localStorage.getItem('config') !== null ? JSON.parse(localStorage.getItem('config')) : {};
-	Object.keys(previousSettings).forEach(key => settings[key] = previousSettings[key]);
+	Object.assign(settings, previousSettings);
 	// Store all settings as CSS variables as well
-	Object.keys(settings).forEach(key => document.body.style.setProperty('--' + key, settings[key]));
+	Object.keys(settings).forEach((key) => document.body.style.setProperty('--' + key, settings[key]));
 
 	var update = (key, value) => {
 		settings[key] = value;
@@ -72,6 +72,10 @@ document.getElementById('settings-smooth-scroll-duration').addEventListener('inp
 		Settings.set('smooth-scroll-duration', duration);
 	}
 });
+document.getElementById('settings-format-urls').checked = Settings.get('format-urls');
+document.getElementById('settings-format-urls').addEventListener('click', () => Settings.toggle('format-urls'));
+document.getElementById('settings-shorten-urls').checked = Settings.get('shorten-urls');
+document.getElementById('settings-shorten-urls').addEventListener('click', () => Settings.toggle('shorten-urls'));
 
 document.body.addEventListener('keydown', (e) => {
 	if ((e.key == "H" || e.key == "h") && e.shiftKey && e.ctrlKey) {
@@ -88,7 +92,7 @@ var client = new tmi.client(options);
 client.addListener('message', handleChat);
 client.connect();
 
-// Continually scroll up, in a way to make the comments readable
+// Continually scroll, in a way to make the comments readable
 var lastFrame = +new Date();
 function scrollUp(now) {
 	if (Settings.get('smooth-scroll') && scrollDistance > 0) {
@@ -118,7 +122,7 @@ function handleChat(channel, userstate, message, self) {
 	}
 	chatName.textContent = userstate['display-name'] || userstate.username;
 	chatColon.className = 'chat-colon';
-	chatMessage.innerHTML = formatEmotes(message, userstate.emotes);
+	chatMessage.innerHTML = formatMessage(message, userstate.emotes);
 	chatLine.appendChild(chatName);
 	chatLine.appendChild(chatColon);
 	chatLine.appendChild(chatMessage);
@@ -137,41 +141,69 @@ function handleChat(channel, userstate, message, self) {
 	}
 }
 
-function htmlEntities(html) {
-	var isArray = Array.isArray(html);
-	if (!isArray) {
-		html = html.split('');
+/*
+To deal with message formatting, the message gets turned into an array of characters first.
+Twitch provides the IDs of the emotes and from where to where they are located in the message.
+We replace those emote-related characters with empty strings and place an <img> tag as a string at the 'from' location.
+Other changes take place in a similar way, by calculating the 'from' and 'to' values ourselves.
+As a last step, all entries in the array with 1 character are transformed into HTML entities if they are potentially dangerous.
+At the end, we join() the character array again, forming a message safe to assign to the innerHTML property.
+*/
+function formatMessage(text, emotes) {
+	var message = text.split('');
+	message = formatEmotes(message, emotes);
+	message = formatLinks(message, text);
+	return htmlEntities(message).join('');
+}
+
+function formatEmotes(text, emotes) {
+	if (!emotes) {
+		return text;
 	}
-	html = html.map(function(character) {
+	for (var id in emotes) {
+		emotes[id].forEach((range) => {
+			if (typeof range == 'string') {
+				range = range.split('-').map(index => parseInt(index));
+				replaceText(text, '<img class="emoticon" src="https://static-cdn.jtvnw.net/emoticons/v2/' + id + '/default/dark/1.0" />', range[0], range[1]);
+			}
+		});
+	};
+	return text;
+}
+
+function replaceText(text, replacement, from, to) {
+	for (var i = from + 1; i <= to; i++) {
+		text[i] = '';
+	}
+	text.splice(from, 1, replacement);
+}
+
+function formatLinks(text, originalText) {
+	var urlRegex = /https?:\/\/(www\.)?([0-9a-zA-Z-_\.]+\.[0-9a-zA-Z-_]+\/)([0-9a-zA-Z-_#=\/\.\?\|]+)?/g;
+	var match;
+	while ((match = urlRegex.exec(originalText)) !== null) {
+		var urlText = match[0];
+		if (Settings.get('shorten-urls') && match[3].length > 15) {
+			urlText = match[2] + ' &hellip; ';
+			if (match[3].lastIndexOf('/') == -1) {
+				// No directory structure in the URL
+				urlText += match[3].slice(-7);
+			} else {
+				// Show last directory if it is not too long
+				urlText += match[3].substring(match[3].lastIndexOf('/')).slice(-10);
+			}
+		}
+		var replacement = Settings.get('format-urls') ? '<a href="' + match[0] + '" target="_blank" rel="noreferrer noopener">' + urlText + '</a>' : urlText;
+		replaceText(text, replacement, match.index, match.index + match[0].length - 1);
+	}
+	return text;
+}
+
+function htmlEntities(html) {
+	return html.map((character) => {
 		if (character.length == 1) {
 			return character.replace(/[\u00A0-\u9999<>\&]/gim, (match) => '&#' + match.charCodeAt(0) + ';');
 		}
 		return character;
 	});
-	if (!isArray) {
-		html = html.join('');
-	}
-	return html;
-}
-
-function formatEmotes(text, emotes) {
-	if (!emotes) {
-		return htmlEntities(text);
-	}
-	var splitText = text.split('');
-	for (var id in emotes) {
-		emotes[id].forEach((range) => {
-			if (typeof range == 'string') {
-				range = range.split('-').map(index => parseInt(index));
-				var length =  range[1] - range[0],
-					empty = [""];
-				for (var i = 0; i < length; i++) {
-					empty.push("");
-				}
-				splitText = splitText.slice(0, range[0]).concat(empty).concat(splitText.slice(range[1] + 1, splitText.length));
-				splitText.splice(range[0], 1, '<img class="emoticon" src="https://static-cdn.jtvnw.net/emoticons/v2/' + id + '/default/dark/1.0" />');
-			}
-		});
-	};
-	return htmlEntities(splitText).join('');
 }
