@@ -48,7 +48,8 @@ body {
 #chat img {
   max-width: 100%;
   max-height: 50vh;
-  font-weight: 300;
+  max-height: var(--inline-images-height);
+  color: inherit;
   margin: 0;
   vertical-align: baseline;
 }

@@ -25,14 +25,22 @@
         </div>
       </div>
       <div>
-        <h3>Behavior</h3>
+        <h3>Chat Behavior</h3>
         <div><label><input type="checkbox" id="settings-new-messages-on-top"> New messages appear at the top</label></div>
         <div>
           <label><input type="checkbox" id="settings-smooth-scroll"> Smooth scrolling</label>
-          <div class="subfield hidden"><label>Time allowed for message to appear: <input type="number" size="5" max="10000" min="1" id="settings-smooth-scroll-duration" /> (milliseconds)</label></div>
+          <div class="subfield hidden"><label>Time allowed for message to appear: <input type="number" size="5" max="10000" min="1" id="settings-smooth-scroll-duration" /> milliseconds</label></div>
         </div>
+      </div>
+      <div>
+        <h3>Message Handling</h3>
         <div><label><input type="checkbox" id="settings-format-urls"> Turn URLs into clickable links</label></div>
         <div><label><input type="checkbox" id="settings-shorten-urls"> Shorten long URLs</label></div>
+        <div>
+          <label><input type="checkbox" id="settings-inline-images"> Show any images linked to by users</label>
+          <div class="subfield hidden"><label>Maximum image size: <input type="number" size="2" max="80" min="5" id="settings-inline-images-height" />% of available screen height</label></div>
+        </div>
+        <div><label><input type="checkbox" id="settings-unfurl-twitter"> Unfurl Twitter links</label></div>
       </div>
     </div>
 
@@ -52,6 +60,9 @@ var defaultSettings = {
   'smooth-scroll-duration': 1000,  // Time in milliseconds allowed for a message to appear
   'format-urls': true,
   'shorten-urls': true,
+  'inline-images': false,
+  'inline-images-height': '50vh',
+  'unfurl-twitter': true,
    // Make sure to enter full rgb definitions here as the color input fields don't accept other values
   'background-color': '#000000',
   'odd-background-color': '#111111',

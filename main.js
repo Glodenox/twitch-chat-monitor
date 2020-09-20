@@ -10,7 +10,8 @@ var options = {
 var chat = document.getElementById('chat'),
 	chatContainer = document.getElementById('chat-container'),
 	scrollDistance = 0, // How many pixels are we currently still hiding?
-	scrollReference = 0; // Distance when we started scrolling;
+	scrollReference = 0, // Distance when we started scrolling
+	imageExtensions = ['.jpg', '.jpeg', '.gif', '.png', '.webp', '.av1'];
 
 /* Store settings with a local cache. Storing these variables directly in localStorage would remove the variable's type information */
 var Settings = function() {
@@ -46,7 +47,7 @@ document.getElementById('settings-wheel').addEventListener('click', () => docume
 	document.getElementById('settings-' + key).value = Settings.get(key);
 	document.getElementById('settings-' + key).addEventListener('change', (e) => Settings.set(key, e.target.value));
 });
-// Behavior
+// Chat Behavior
 document.body.classList.toggle('reverse-order', !Settings.get('new-messages-on-top'));
 document.getElementById('settings-new-messages-on-top').checked = Settings.get('new-messages-on-top');
 document.getElementById('settings-new-messages-on-top').addEventListener('click', () => {
@@ -72,10 +73,28 @@ document.getElementById('settings-smooth-scroll-duration').addEventListener('inp
 		Settings.set('smooth-scroll-duration', duration);
 	}
 });
+// Message Handling
 document.getElementById('settings-format-urls').checked = Settings.get('format-urls');
 document.getElementById('settings-format-urls').addEventListener('click', () => Settings.toggle('format-urls'));
 document.getElementById('settings-shorten-urls').checked = Settings.get('shorten-urls');
 document.getElementById('settings-shorten-urls').addEventListener('click', () => Settings.toggle('shorten-urls'));
+document.getElementById('settings-inline-images').checked = Settings.get('inline-images');
+document.getElementById('settings-inline-images').addEventListener('click', () => {
+	Settings.toggle('inline-images');
+	document.getElementById('settings-inline-images').parentNode.nextElementSibling.classList.toggle('hidden', !Settings.get('inline-images'));
+});
+if (Settings.get('inline-images')) {
+	document.getElementById('settings-inline-images').parentNode.nextElementSibling.classList.remove('hidden');
+}
+document.getElementById('settings-inline-images-height').value = Settings.get('inline-images-height').slice(0, -2); // remove vh identifier
+document.getElementById('settings-inline-images-height').addEventListener('input', (e) => {
+	var height = parseInt(e.target.value);
+	if (!isNaN(height) && e.target.validity.valid) {
+		Settings.set('inline-images-height', height + 'vh');
+	}
+});
+document.getElementById('settings-unfurl-twitter').checked = Settings.get('unfurl-twitter');
+document.getElementById('settings-unfurl-twitter').addEventListener('click', () => Settings.toggle('unfurl-twitter'));
 
 document.body.addEventListener('keydown', (e) => {
 	if ((e.key == "H" || e.key == "h") && e.shiftKey && e.ctrlKey) {
@@ -107,7 +126,6 @@ function scrollUp(now) {
 }
 window.requestAnimationFrame(scrollUp);
 
-/* Inspirated by https://gist.github.com/AlcaDesign/742d8cb82e3e93ad4205 */
 function handleChat(channel, userstate, message, self) {
 	//console.log(channel, userstate, message);
 	var chatLine = document.createElement('div'),
@@ -123,9 +141,40 @@ function handleChat(channel, userstate, message, self) {
 	chatName.textContent = userstate['display-name'] || userstate.username;
 	chatColon.className = 'chat-colon';
 	chatMessage.innerHTML = formatMessage(message, userstate.emotes);
+
+	// Deal with loading user-provided inline images
+	var userImages = Array.from(chatMessage.querySelectorAll('img.user-image'));
+	if (userImages.length > 0) {
+		userImages.filter((userImage) => !userImage.complete).forEach((userImage) => {
+			userImage.style.display = 'none';
+			userImage.addEventListener('load', () => {
+				var previousChatLineHeight = chatLine.scrollHeight;
+				userImage.style.display = 'inline';
+				scrollReference = scrollDistance += Math.max(0, chatLine.scrollHeight - previousChatLineHeight);
+			});
+		});
+	}
+
+	// Load Twitter messages, if any
+	var tweets = Array.from(chatMessage.querySelectorAll('div[data-tweet]'));
+	if (tweets.length > 0 && twttr && twttr.init) {
+		tweets.forEach((tweet) => {
+			twttr.widgets
+				.createTweet(tweet.dataset.tweet, tweet, {theme: 'dark', conversation: 'none', cards: 'hidden', dnt: 'true'})
+				.then(el => {
+					scrollReference = scrollDistance += el.scrollHeight;
+				})
+				.catch(e => console.log(e));
+		});
+	}
+
 	chatLine.appendChild(chatName);
 	chatLine.appendChild(chatColon);
 	chatLine.appendChild(chatMessage);
+	addMessage(chatLine);
+}
+
+function addMessage(chatLine) {
 	chat.appendChild(chatLine);
 
 	// Calculate height for smooth scrolling
@@ -171,32 +220,53 @@ function formatEmotes(text, emotes) {
 	return text;
 }
 
-function replaceText(text, replacement, from, to) {
-	for (var i = from + 1; i <= to; i++) {
-		text[i] = '';
-	}
-	text.splice(from, 1, replacement);
-}
-
 function formatLinks(text, originalText) {
 	var urlRegex = /https?:\/\/(www\.)?([0-9a-zA-Z-_\.]+\.[0-9a-zA-Z-_]+\/)([0-9a-zA-Z-_#=\/\.\?\|]+)?/g;
 	var match;
 	while ((match = urlRegex.exec(originalText)) !== null) {
 		var urlText = match[0];
-		if (Settings.get('shorten-urls') && match[3].length > 15) {
-			urlText = match[2] + ' &hellip; ';
-			if (match[3].lastIndexOf('/') == -1) {
-				// No directory structure in the URL
-				urlText += match[3].slice(-7);
+		var path = match[3] || '';
+		if (Settings.get('inline-images') && imageExtensions.some((extension) => path.endsWith(extension))) {
+			var imageUrl = match[0];
+			var giphy = /^https?:\/\/giphy\.com\/gifs\/(.*-)?([a-zA-Z0-9]+)$/gm.exec(link.textContent);
+			if (giphy) {
+				imageUrl = "https://media1.giphy.com/media/" + giphy[2].split("-").pop() + "/giphy.gif";
+			}
+			text.push('<br /><img class="user-image" src="' + imageUrl + '" alt="' + match[0] + '" />');
+			replaceText(text, '', match.index, match.index + match[0].length - 1);
+			continue;
+		}
+		if (Settings.get('unfurl-twitter') && match[2] == 'twitter.com/' && match[3] != undefined) {
+			var twitter = /^https?:\/\/(www\.)?twitter\.com.+\/([0-9]+)$/gm.exec(match[0]);
+			if (twitter) {
+				text.push('<div data-tweet="' + twitter[2] + '"></div>');
+				replaceText(text, '', match.index, match.index + match[0].length - 1);
+				continue;
+			}
+		}
+		if (Settings.get('shorten-urls')) {
+			if (path.length < 15) {
+				urlText = match[2] + path;
 			} else {
-				// Show last directory if it is not too long
-				urlText += match[3].substring(match[3].lastIndexOf('/')).slice(-10);
+				urlText = match[2] + ' &hellip; ';
+				if (path.lastIndexOf('/') == -1) {
+					urlText += path.slice(-7); // No directory structure in the URL
+				} else {
+					urlText += path.substring(path.lastIndexOf('/')).slice(-10); // Show last directory if it is not too long
+				}
 			}
 		}
 		var replacement = Settings.get('format-urls') ? '<a href="' + match[0] + '" target="_blank" rel="noreferrer noopener">' + urlText + '</a>' : urlText;
 		replaceText(text, replacement, match.index, match.index + match[0].length - 1);
 	}
 	return text;
+}
+
+function replaceText(text, replacement, from, to) {
+	for (var i = from + 1; i <= to; i++) {
+		text[i] = '';
+	}
+	text.splice(from, 1, replacement);
 }
 
 function htmlEntities(html) {
