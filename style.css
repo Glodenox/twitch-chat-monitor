@@ -54,8 +54,11 @@ body {
   vertical-align: baseline;
 }
 
-#chat .chat-colon:after {
+#chat .chat-user:after {
   content: ': ';
+  color: #eee;
+  color: var(--text-color);
+  font-weight: 300;
 }
 
 #chat .chat-user {
@@ -146,10 +149,15 @@ body {
   padding-left: 10px;
 }
 
-#settings input {
+#settings input, #settings button {
   font-size: 0.625em;
   vertical-align: bottom;
   color: inherit;
+}
+
+#settings button:disabled {
+  opacity: 0.5;
+  cursor: default;
 }
 
 #settings input[type="checkbox"] {
@@ -167,7 +175,7 @@ body {
   font-weight: 700;
 }
 
-#settings input[type="number"] {
+#settings input[type="number"], #settings input[type="text"], #settings button {
   height: 32px;
   border: 2px solid #eee;
   border-color: var(--text-color);
@@ -175,7 +183,11 @@ body {
   background-color: var(--background-color);
 }
 
-#settings input[type="number"]:invalid {
+#settings button {
+  cursor: pointer;
+}
+
+#settings input[type="number"]:invalid, #settings input[type="text"]:invalid {
   border-color: red;
 }
 

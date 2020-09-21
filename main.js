@@ -1,12 +1,3 @@
-/* Configuration */
-var options = {
-	connection: {
-		secure: true,
-		reconnect: true
-	},
-	channels: [ defaultSettings.channel ]
-};
-
 var chat = document.getElementById('chat'),
 	chatContainer = document.getElementById('chat-container'),
 	scrollDistance = 0, // How many pixels are we currently still hiding?
@@ -35,13 +26,35 @@ var Settings = function() {
 		'reset': () => {
 			Object.assign(settings, defaultSettings);
 			localStorage.setItem('config', JSON.stringify(defaultSettings));
-			console.log('Config reset');
 		}
 	}
 }();
 
+/* Set up chat client */
+var options = {
+	connection: {
+		secure: true,
+		reconnect: true
+	},
+	channels: [ ensureHash(Settings.get('channel')) ]
+};
+var client = new tmi.client(options);
+client.addListener('message', handleChat);
+client.addListener('roomstate', (channel, state) => createNotice('Joined ' + channel + '.'));
+client.connect();
+
 /* Interface interactions */
 document.getElementById('settings-wheel').addEventListener('click', () => document.getElementById('settings').classList.toggle('hidden'));
+// Twitch
+document.getElementById('settings-channel').value = Settings.get('channel');
+document.getElementById('settings-channel-submit').addEventListener('click', (e) => {
+	var channel = document.getElementById('settings-channel').value;
+	if (channel != '') {
+		client.leave(ensureHash(Settings.get('channel')));
+		Settings.set('channel', channel);
+		client.join(ensureHash(channel));
+	}
+});
 // Style
 ['background-color', 'odd-background-color', 'separator-color', 'text-color', 'user-color', 'moderator-color'].forEach(key => {
 	document.getElementById('settings-' + key).value = Settings.get(key);
@@ -106,11 +119,6 @@ document.body.addEventListener('keydown', (e) => {
 	}
 });
 
-/* Retrieve chat */
-var client = new tmi.client(options);
-client.addListener('message', handleChat);
-client.connect();
-
 // Continually scroll, in a way to make the comments readable
 var lastFrame = +new Date();
 function scrollUp(now) {
@@ -127,10 +135,8 @@ function scrollUp(now) {
 window.requestAnimationFrame(scrollUp);
 
 function handleChat(channel, userstate, message, self) {
-	//console.log(channel, userstate, message);
 	var chatLine = document.createElement('div'),
 		chatName = document.createElement('span'),
-		chatColon = document.createElement('span'),
 		chatMessage = document.createElement('span');
 
 	// Fill chat line with content
@@ -139,7 +145,6 @@ function handleChat(channel, userstate, message, self) {
 		chatName.classList.add('moderator');
 	}
 	chatName.textContent = userstate['display-name'] || userstate.username;
-	chatColon.className = 'chat-colon';
 	chatMessage.innerHTML = formatMessage(message, userstate.emotes);
 
 	// Deal with loading user-provided inline images
@@ -169,14 +174,19 @@ function handleChat(channel, userstate, message, self) {
 	}
 
 	chatLine.appendChild(chatName);
-	chatLine.appendChild(chatColon);
 	chatLine.appendChild(chatMessage);
+	addMessage(chatLine);
+}
+
+function createNotice(message) {
+	var chatLine = document.createElement('div');
+	chatLine.className = 'notice';
+	chatLine.textContent = message;
 	addMessage(chatLine);
 }
 
 function addMessage(chatLine) {
 	chat.appendChild(chatLine);
-
 	// Calculate height for smooth scrolling
 	scrollReference = scrollDistance += chatLine.scrollHeight;
 	if (!Settings.get('new-messages-on-top') && !Settings.get('smooth-scroll')) {
@@ -258,6 +268,13 @@ function formatLinks(text, originalText) {
 		}
 		var replacement = Settings.get('format-urls') ? '<a href="' + match[0] + '" target="_blank" rel="noreferrer noopener">' + urlText + '</a>' : urlText;
 		replaceText(text, replacement, match.index, match.index + match[0].length - 1);
+	}
+	return text;
+}
+
+function ensureHash(text) {
+	if (!text.startsWith('#')) {
+		return '#' + text;
 	}
 	return text;
 }
