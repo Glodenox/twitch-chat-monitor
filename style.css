@@ -72,6 +72,11 @@ body {
   color: var(--moderator-color);
 }
 
+#chat .subscription {
+  border-left: 4px solid #eee;
+  border-left-color: var(--text-color);
+}
+
 #chat a {
   color: inherit;
 }

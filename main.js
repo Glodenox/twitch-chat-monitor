@@ -40,7 +40,20 @@ var options = {
 };
 var client = new tmi.client(options);
 client.addListener('message', handleChat);
-client.addListener('roomstate', (channel, state) => createNotice('Joined ' + channel + '.'));
+client.addListener('roomstate', (channel, state) => addNotice(`Joined ${channel}.`));
+client.addListener('subscription', (channel, username, method, message, userstate) => handleSubscription(username, message, userstate));
+client.addListener('resub', (channel, username, months, message, userstate, methods) => handleSubscription(username, message, userstate));
+client.addListener('submysterygift', (channel, username, numbOfSubs, methods, userstate) => handleSubscription(username, null, userstate));
+client.addListener('messagedeleted', handleMessageDeletion);
+client.addListener('raided', (channel, username, viewers) => addNotice(`${username} raided the channel with ${viewers} viewers!`));
+client.addListener('slowmode', (channel, enabled, length) => addNotice(`Slowmode chat has been ${enabled ? 'activated for ${length} minutes' : 'deactivated'}.`));
+client.addListener('followersonly', (channel, enabled, length) => addNotice(`Followers-only chat has been ${enabled ? 'activated for ${length} minutes' : 'deactivated'}.`));
+client.addListener('emoteonly', (channel, enabled) => addNotice(`Emote-only chat has been ${enabled ? 'activated' : 'deactivated'}.`));
+client.addListener('clearchat', (channel) => {
+	chat.innerHTML = '';
+	addNotice('Chat has been cleared');
+});
+
 client.connect();
 
 /* Interface interactions */
@@ -135,6 +148,59 @@ function scrollUp(now) {
 window.requestAnimationFrame(scrollUp);
 
 function handleChat(channel, userstate, message, self) {
+	var chatLine = createChatLine(userstate, message);
+
+	// Deal with loading user-provided inline images
+	var userImages = Array.from(chatLine.querySelectorAll('img.user-image'));
+	if (userImages.length > 0) {
+		userImages.filter((userImage) => !userImage.complete).forEach((userImage) => {
+			userImage.style.display = 'none';
+			userImage.addEventListener('load', () => {
+				var oldChatLineHeight = chatLine.scrollHeight;
+				userImage.style.display = 'inline';
+				scrollReference = scrollDistance += Math.max(0, chatLine.scrollHeight - oldChatLineHeight);
+			});
+		});
+	}
+
+	// Load Twitter messages, if any
+	var tweets = Array.from(chatLine.querySelectorAll('div[data-tweet]'));
+	if (tweets.length > 0 && twttr && twttr.init) {
+		tweets.forEach((tweet) => {
+			twttr.widgets
+				.createTweet(tweet.dataset.tweet, tweet, {theme: 'dark', conversation: 'none', cards: 'hidden', dnt: 'true'})
+				.then(el => {
+					scrollReference = scrollDistance += el.scrollHeight;
+				})
+				.catch(e => console.log(e));
+		});
+	}
+	addMessage(chatLine);
+}
+
+function handleSubscription(username, message, userstate) {
+	var chatLine = document.createElement('div');
+	chatLine.className = 'subscription';
+
+	var subscriptionNotice = document.createElement('div');
+	subscriptionNotice.textContent = userstate['system-msg'].replaceAll('\\s', ' ');
+	chatLine.append(subscriptionNotice);
+
+	if (message) {
+		chatLine.append(createChatLine(userstate, message));
+	}
+	addMessage(chatLine);
+}
+
+function handleMessageDeletion(channel, username, deletedMessage, userstate) {
+	console.log('Message deleted', username, deletedMessage, userstate, document.getElementById(deletedMessage));
+	var message = document.getElementById(deletedMessage);
+	if (message) {
+		message.textContent = '<Message deleted>';
+	}
+}
+
+function createChatLine(userstate, message) {
 	var chatLine = document.createElement('div'),
 		chatName = document.createElement('span'),
 		chatMessage = document.createElement('span');
@@ -147,40 +213,14 @@ function handleChat(channel, userstate, message, self) {
 	chatName.textContent = userstate['display-name'] || userstate.username;
 	chatMessage.innerHTML = formatMessage(message, userstate.emotes);
 
-	// Deal with loading user-provided inline images
-	var userImages = Array.from(chatMessage.querySelectorAll('img.user-image'));
-	if (userImages.length > 0) {
-		userImages.filter((userImage) => !userImage.complete).forEach((userImage) => {
-			userImage.style.display = 'none';
-			userImage.addEventListener('load', () => {
-				var previousChatLineHeight = chatLine.scrollHeight;
-				userImage.style.display = 'inline';
-				scrollReference = scrollDistance += Math.max(0, chatLine.scrollHeight - previousChatLineHeight);
-			});
-		});
-	}
-
-	// Load Twitter messages, if any
-	var tweets = Array.from(chatMessage.querySelectorAll('div[data-tweet]'));
-	if (tweets.length > 0 && twttr && twttr.init) {
-		tweets.forEach((tweet) => {
-			twttr.widgets
-				.createTweet(tweet.dataset.tweet, tweet, {theme: 'dark', conversation: 'none', cards: 'hidden', dnt: 'true'})
-				.then(el => {
-					scrollReference = scrollDistance += el.scrollHeight;
-				})
-				.catch(e => console.log(e));
-		});
-	}
-
 	chatLine.appendChild(chatName);
 	chatLine.appendChild(chatMessage);
-	addMessage(chatLine);
+
+	return chatLine;
 }
 
-function createNotice(message) {
+function addNotice(message) {
 	var chatLine = document.createElement('div');
-	chatLine.className = 'notice';
 	chatLine.textContent = message;
 	addMessage(chatLine);
 }
@@ -238,7 +278,7 @@ function formatLinks(text, originalText) {
 		var path = match[3] || '';
 		if (Settings.get('inline-images') && imageExtensions.some((extension) => path.endsWith(extension))) {
 			var imageUrl = match[0];
-			var giphy = /^https?:\/\/giphy\.com\/gifs\/(.*-)?([a-zA-Z0-9]+)$/gm.exec(link.textContent);
+			var giphy = /^https?:\/\/giphy\.com\/gifs\/(.*-)?([a-zA-Z0-9]+)$/gm.exec(urlText.textContent);
 			if (giphy) {
 				imageUrl = "https://media1.giphy.com/media/" + giphy[2].split("-").pop() + "/giphy.gif";
 			}
@@ -255,7 +295,7 @@ function formatLinks(text, originalText) {
 			}
 		}
 		if (Settings.get('shorten-urls')) {
-			if (path.length < 15) {
+			if (path.length < 25) {
 				urlText = match[2] + path;
 			} else {
 				urlText = match[2] + ' &hellip; ';
