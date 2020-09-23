@@ -2,9 +2,11 @@ var chat = document.getElementById('chat'),
 	chatContainer = document.getElementById('chat-container'),
 	scrollDistance = 0, // How many pixels are we currently still hiding?
 	scrollReference = 0, // Distance when we started scrolling
-	imageExtensions = ['.jpg', '.jpeg', '.gif', '.png', '.webp', '.av1'];
+	imageExtensions = ['.jpg', '.jpeg', '.gif', '.png', '.webp', '.av1'],
+	roomstate = {};
 
-/* Store settings with a local cache. Storing these variables directly in localStorage would remove the variable's type information */
+
+/** Store settings with a local cache. Storing these variables directly in localStorage would remove the variable's type information **/
 var Settings = function() {
 	// Clone default settings so they can be used to reset
 	var settings = Object.assign({}, defaultSettings);
@@ -30,7 +32,7 @@ var Settings = function() {
 	}
 }();
 
-/* Set up chat client */
+/** Set up chat client **/
 var options = {
 	connection: {
 		secure: true,
@@ -40,7 +42,7 @@ var options = {
 };
 var client = new tmi.client(options);
 client.addListener('message', handleChat);
-client.addListener('roomstate', (channel, state) => addNotice(`Joined ${channel}.`));
+client.addListener('roomstate', handleRoomstate);
 client.addListener('subscription', (channel, username, method, message, userstate) => handleSubscription(username, message, userstate));
 client.addListener('resub', (channel, username, months, message, userstate, methods) => handleSubscription(username, message, userstate));
 client.addListener('submysterygift', (channel, username, numbOfSubs, methods, userstate) => handleSubscription(username, null, userstate));
@@ -56,7 +58,8 @@ client.addListener('clearchat', (channel) => {
 
 client.connect();
 
-/* Interface interactions */
+
+/** Interface interactions **/
 document.getElementById('settings-wheel').addEventListener('click', () => document.getElementById('settings').classList.toggle('hidden'));
 // Twitch
 document.getElementById('settings-channel').value = Settings.get('channel');
@@ -133,6 +136,7 @@ document.body.addEventListener('keydown', (e) => {
 	}
 });
 
+
 // Continually scroll, in a way to make the comments readable
 var lastFrame = +new Date();
 function scrollUp(now) {
@@ -148,6 +152,8 @@ function scrollUp(now) {
 }
 window.requestAnimationFrame(scrollUp);
 
+
+/** Chat event handling **/
 function handleChat(channel, userstate, message, self) {
 	var chatLine = createChatLine(userstate, message);
 
@@ -179,6 +185,13 @@ function handleChat(channel, userstate, message, self) {
 	addMessage(chatLine);
 }
 
+function handleRoomstate(channel, state) {
+	if (roomstate.channel != channel) {
+		addNotice(`Joined ${channel}.`);
+	}
+	roomstate = state;
+}
+
 function handleSubscription(username, message, userstate) {
 	var chatLine = document.createElement('div');
 	chatLine.className = 'subscription';
@@ -194,8 +207,7 @@ function handleSubscription(username, message, userstate) {
 }
 
 function handleMessageDeletion(channel, username, deletedMessage, userstate) {
-	console.log('Message deleted', username, deletedMessage, userstate, document.getElementById(deletedMessage));
-	var message = document.getElementById(deletedMessage);
+	var message = document.getElementById(userstate['target-msg-id']);
 	if (message) {
 		message.textContent = '<Message deleted>';
 	}
@@ -213,6 +225,7 @@ function createChatLine(userstate, message) {
 	}
 	chatName.textContent = userstate['display-name'] || userstate.username;
 	chatMessage.innerHTML = formatMessage(message, userstate.emotes);
+	chatMessage.id = userstate.id;
 
 	chatLine.appendChild(chatName);
 	chatLine.appendChild(chatMessage);
@@ -313,6 +326,8 @@ function formatLinks(text, originalText) {
 	return text;
 }
 
+
+/** Helper functions **/
 function ensureHash(text) {
 	if (!text.startsWith('#')) {
 		return '#' + text;
