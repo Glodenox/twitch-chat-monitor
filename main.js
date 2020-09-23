@@ -60,13 +60,14 @@ client.connect();
 document.getElementById('settings-wheel').addEventListener('click', () => document.getElementById('settings').classList.toggle('hidden'));
 // Twitch
 document.getElementById('settings-channel').value = Settings.get('channel');
-document.getElementById('settings-channel-submit').addEventListener('click', (e) => {
+document.getElementById('settings-channel').form.addEventListener('submit', (e) => {
 	var channel = document.getElementById('settings-channel').value;
 	if (channel != '') {
 		client.leave(ensureHash(Settings.get('channel')));
 		Settings.set('channel', channel);
 		client.join(ensureHash(channel));
 	}
+	e.preventDefault();
 });
 // Style
 ['background-color', 'odd-background-color', 'separator-color', 'text-color', 'user-color', 'moderator-color'].forEach(key => {

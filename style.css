@@ -180,7 +180,7 @@ body {
   font-weight: 700;
 }
 
-#settings input[type="number"], #settings input[type="text"], #settings button {
+#settings input[type="number"], #settings input[type="text"], #settings input[type="submit"], #settings button {
   height: 32px;
   border: 2px solid #eee;
   border-color: var(--text-color);
