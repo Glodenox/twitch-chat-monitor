@@ -47,22 +47,39 @@ client.addListener('roomstate', handleRoomstate);
 client.addListener('subscription', (channel, username, method, message, userstate) => handleSubscription(username, message, userstate));
 client.addListener('resub', (channel, username, months, message, userstate, methods) => handleSubscription(username, message, userstate));
 client.addListener('submysterygift', (channel, username, numbOfSubs, methods, userstate) => handleSubscription(username, null, userstate));
-client.addListener('messagedeleted', handleMessageDeletion);
+client.addListener('cheer', handleCheer);
 client.addListener('raided', (channel, username, viewers) => addNotice(`${username} raided the channel with ${viewers} viewers!`));
-client.addListener('slowmode', (channel, enabled, length) => addNotice(`Slowmode chat has been ${enabled ? 'activated for ${length} minutes' : 'deactivated'}.`));
-client.addListener('followersonly', (channel, enabled, length) => addNotice(`Followers-only chat has been ${enabled ? 'activated for ${length} minutes' : 'deactivated'}.`));
+client.addListener('slowmode', (channel, enabled, length) => addNotice(`Slowmode chat has been ${enabled ? 'activated for ${length} seconds' : 'deactivated'}.`));
+client.addListener('followersonly', (channel, enabled, length) => addNotice(`Followers-only chat has been ${enabled ? 'activated for ${length} seconds' : 'deactivated'}.`));
 client.addListener('emoteonly', (channel, enabled) => addNotice(`Emote-only chat has been ${enabled ? 'activated' : 'deactivated'}.`));
+client.addListener('hosting', (channel, target, viewers) => addNotice(`The channel is now hosting ${target}.`));
+client.addListener('unhost', (channel, viewers) => addNotice(`The channel has stopped hosting another channel.`));
+client.addListener('messagedeleted', handleMessageDeletion);
 client.addListener('clearchat', (channel) => {
 	chat.innerHTML = '';
 	addNotice('Chat has been cleared by a moderator');
 });
-client.addListener('cheer', handleCheer);
+client.addListener('ban', (channel, username, reason, userstate) => {
+	if (Settings.get('show-mod-actions')) {
+		addNotice(`${username} has been banned.`);
+	}
+});
+client.addListener('timeout', (channel, username, reason, duration, userstate) => {
+	console.log('timeout', username, duration, userstate);
+	if (Settings.get('show-mod-actions')) {
+		addNotice(`${username} was given a time out for ${duration} seconds.`);
+	}
+});
 
 client.connect();
 
 
 /** Interface interactions **/
-document.getElementById('settings-wheel').addEventListener('click', () => document.getElementById('settings').classList.toggle('hidden'));
+document.getElementById('settings-wheel').addEventListener('click', () => {
+	document.getElementById('settings').classList.toggle('hidden');
+	document.getElementById('settings').scrollTop = 0;
+	document.getElementById('settings-wheel').classList.toggle('open');
+});
 // Twitch
 document.getElementById('settings-channel').value = Settings.get('channel');
 document.getElementById('settings-channel').form.addEventListener('submit', (e) => {
@@ -127,14 +144,24 @@ document.getElementById('settings-inline-images-height').addEventListener('input
 });
 document.getElementById('settings-unfurl-twitter').checked = Settings.get('unfurl-twitter');
 document.getElementById('settings-unfurl-twitter').addEventListener('click', () => Settings.toggle('unfurl-twitter'));
+document.getElementById('settings-show-subscriptions').checked = Settings.get('show-subscriptions');
+document.getElementById('settings-show-subscriptions').addEventListener('click', () => Settings.toggle('show-subscriptions'));
+document.getElementById('settings-show-bits').checked = Settings.get('show-bits');
+document.getElementById('settings-show-bits').addEventListener('click', () => Settings.toggle('show-bits'));
+document.getElementById('settings-show-mod-actions').checked = Settings.get('show-mod-actions');
+document.getElementById('settings-show-mod-actions').addEventListener('click', () => Settings.toggle('show-mod-actions'));
 
+// Hotkeys
 document.body.addEventListener('keydown', (e) => {
 	if ((e.key == "H" || e.key == "h") && e.shiftKey && e.ctrlKey) {
 		document.getElementById('curtain').classList.toggle('hidden');
 	} else if ((e.key == "S" || e.key == "s") && e.shiftKey && e.ctrlKey) {
 		document.getElementById('settings').classList.toggle('hidden');
+		document.getElementById('settings').scrollTop = 0;
+		document.getElementById('settings-wheel').classList.toggle('open');
 	} else if ((e.key == "Escape")) {
 		document.getElementById('settings').classList.add('hidden');
+		document.getElementById('settings-wheel').classList.remove('open');
 	}
 });
 
@@ -195,6 +222,9 @@ function handleRoomstate(channel, state) {
 }
 
 function handleSubscription(username, message, userstate) {
+	if (!Settings.get('show-subscriptions')) {
+		return;
+	}
 	var chatLine = document.createElement('div');
 	chatLine.className = 'subscription';
 
@@ -209,7 +239,9 @@ function handleSubscription(username, message, userstate) {
 }
 
 function handleCheer(channel, userstate, message) {
-	console.log('cheer', channel, userstate, message);
+	if (!Settings.get('show-bits')) {
+		return;
+	}
 	// We could consider to transform the cheer emotes in the message instead of removing them (https://dev.twitch.tv/docs/irc/tags/#privmsg-twitch-tags)
 	var chatMessage = message;
 	bitLevels.forEach((level) => chatMessage = chatMessage.replaceAll(new RegExp(`\\b[a-zA-Z]+${level}\\b`, 'g'), ''));
@@ -235,6 +267,7 @@ function handleMessageDeletion(channel, username, deletedMessage, userstate) {
 	var message = document.getElementById(userstate['target-msg-id']);
 	if (message) {
 		message.textContent = '<Message deleted>';
+		message.classList.add('deleted');
 	}
 }
 
@@ -312,22 +345,24 @@ function formatEmotes(text, emotes) {
 }
 
 function formatLinks(text, originalText) {
-	var urlRegex = /https?:\/\/(www\.)?([0-9a-zA-Z-_\.]+\.[0-9a-zA-Z-_]+\/)([0-9a-zA-Z-_#=\/\.\?\|]+)?/g;
+	var urlRegex = /(https?:\/\/)?(www\.)?([0-9a-zA-Z-_\.]+\.[0-9a-zA-Z]+\/)([0-9a-zA-Z-_#=\/\.\?\|]+)?/g;
 	var match;
 	while ((match = urlRegex.exec(originalText)) !== null) {
-		var urlText = match[0];
-		var path = match[3] || '';
-		if (Settings.get('inline-images') && imageExtensions.some((extension) => path.endsWith(extension))) {
-			var imageUrl = match[0];
+		var urlText = url = match[0];
+		if (!match[1]) {
+			url = 'https://' + url;
+		}
+		var path = match[4] || '';
+		if (Settings.get('inline-images') && match[1] && imageExtensions.some((extension) => path.endsWith(extension))) {
 			var giphy = /^https?:\/\/giphy\.com\/gifs\/(.*-)?([a-zA-Z0-9]+)$/gm.exec(urlText.textContent);
 			if (giphy) {
-				imageUrl = "https://media1.giphy.com/media/" + giphy[2].split("-").pop() + "/giphy.gif";
+				url = "https://media1.giphy.com/media/" + giphy[2].split("-").pop() + "/giphy.gif";
 			}
-			text.push('<br /><img class="user-image" src="' + imageUrl + '" alt="' + match[0] + '" />');
+			text.push('<br /><img class="user-image" src="' + url + '" alt="' + match[0] + '" />');
 			replaceText(text, '', match.index, match.index + match[0].length - 1);
 			continue;
 		}
-		if (Settings.get('unfurl-twitter') && match[2] == 'twitter.com/' && match[3] != undefined) {
+		if (Settings.get('unfurl-twitter') && match[3] == 'twitter.com/' && match[4] != undefined) {
 			var twitter = /^https?:\/\/(www\.)?twitter\.com.+\/([0-9]+)$/gm.exec(match[0]);
 			if (twitter) {
 				text.push('<div data-tweet="' + twitter[2] + '"></div>');
@@ -337,9 +372,9 @@ function formatLinks(text, originalText) {
 		}
 		if (Settings.get('shorten-urls')) {
 			if (path.length < 25) {
-				urlText = match[2] + path;
+				urlText = match[3] + path;
 			} else {
-				urlText = match[2] + ' &hellip; ';
+				urlText = match[3] + ' &hellip; ';
 				if (path.lastIndexOf('/') == -1) {
 					urlText += path.slice(-7); // No directory structure in the URL
 				} else {
@@ -347,7 +382,7 @@ function formatLinks(text, originalText) {
 				}
 			}
 		}
-		var replacement = Settings.get('format-urls') ? '<a href="' + match[0] + '" target="_blank" rel="noreferrer noopener">' + urlText + '</a>' : urlText;
+		var replacement = Settings.get('format-urls') ? '<a href="' + url + '" target="_blank" rel="noreferrer noopener">' + urlText + '</a>' : urlText;
 		replaceText(text, replacement, match.index, match.index + match[0].length - 1);
 	}
 	return text;

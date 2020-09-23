@@ -15,11 +15,11 @@
       <h2>Settings</h2>
       <div>
         <h3>Twitch</h3>
-        <div><form action="#"><label>Twitch channel: <input type="text" id="settings-channel" required="required" /></label> <input type="submit" value="Join channel" /></form></div>
+        <div><form action="#"><label>Twitch channel: <input type="text" id="settings-channel" required="required" /></label> <input type="submit" value="Join" /></form></div>
       </div>
       <div>
         <h3>Style</h3>
-        <div class="fields">
+        <div class="fields style">
           <div>Background<br/><input type="color" id="settings-background-color"/></div>
           <div>Odd rows<br/><input type="color" id="settings-odd-background-color"/></div>
           <div>Separator<br/><input type="color" id="settings-separator-color"/></div>
@@ -46,6 +46,15 @@
         </div>
         <div><label><input type="checkbox" id="settings-unfurl-twitter"> Unfurl Twitter links</label></div>
       </div>
+      <div>
+        <h3>Message Types</h3>
+        <div class="fields">
+          <div><label><input type="checkbox" id="settings-show-subscriptions"> Subscriptions</label></div>
+          <div><label><input type="checkbox" id="settings-show-bits"> Bits</label></div>
+          <div><label><input type="checkbox" id="settings-show-mod-actions"> Mod actions</label></div>
+        </div>
+      </div>
+      <div>Some changes will only be applied to new incoming messages</div>
     </div>
 
     <div id="chat-container">
@@ -73,7 +82,10 @@ var defaultSettings = {
   'separator-color': '#444444',
   'text-color': '#eeeeee',
   'user-color': '#008000',
-  'moderator-color': '#8383f9'
+  'moderator-color': '#8383f9',
+  'show-subscriptions': true,
+  'show-bits': true,
+  'show-mod-actions': false
 };
     </script>
     <script src="main.js"></script>

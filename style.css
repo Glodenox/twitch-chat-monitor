@@ -41,8 +41,8 @@ body {
   background-color: var(--odd-background-color);
 }
 
-#chat .mention-fragment {
-  padding: 0;
+#chat .deleted {
+  font-style: italic;
 }
 
 #chat img {
@@ -109,7 +109,7 @@ body {
   opacity: 0.3;
   cursor: pointer;
 }
-#settings-wheel:hover {
+#settings-wheel:hover, #settings-wheel.open {
   opacity: 1;
 }
 
@@ -125,7 +125,7 @@ body {
   left: 20px;
   margin-bottom: 15px;
   padding: 20px;
-  max-height: 70vh;
+  max-height: 50vh;
   overflow-y: auto;
   border: 3px solid #444;
   border-color: var(--separator-color);
@@ -157,14 +157,13 @@ body {
 }
 
 #settings .fields {
-  display: flex;
-  text-align: center;
-  justify-content: space-evenly;
-  flex-wrap: wrap;
+  display: grid;
+  grid-gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
 }
-#settings .fields > div {
-  min-width: 120px;
-  padding: 10px;
+
+#settings .fields.style > div {
+  text-align: center;
 }
 
 #settings .subfield {
