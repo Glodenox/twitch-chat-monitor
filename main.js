@@ -3,7 +3,8 @@ var chat = document.getElementById('chat'),
 	scrollDistance = 0, // How many pixels are we currently still hiding?
 	scrollReference = 0, // Distance when we started scrolling
 	imageExtensions = ['.jpg', '.jpeg', '.gif', '.png', '.webp', '.av1'],
-	roomstate = {};
+	roomstate = {},
+	bitLevels = [ 10000, 1000, 500, 100, 1 ];
 
 
 /** Store settings with a local cache. Storing these variables directly in localStorage would remove the variable's type information **/
@@ -53,8 +54,9 @@ client.addListener('followersonly', (channel, enabled, length) => addNotice(`Fol
 client.addListener('emoteonly', (channel, enabled) => addNotice(`Emote-only chat has been ${enabled ? 'activated' : 'deactivated'}.`));
 client.addListener('clearchat', (channel) => {
 	chat.innerHTML = '';
-	addNotice('Chat has been cleared');
+	addNotice('Chat has been cleared by a moderator');
 });
+client.addListener('cheer', handleCheer);
 
 client.connect();
 
@@ -206,6 +208,29 @@ function handleSubscription(username, message, userstate) {
 	addMessage(chatLine);
 }
 
+function handleCheer(channel, userstate, message) {
+	console.log('cheer', channel, userstate, message);
+	// We could consider to transform the cheer emotes in the message instead of removing them (https://dev.twitch.tv/docs/irc/tags/#privmsg-twitch-tags)
+	var chatMessage = message;
+	bitLevels.forEach((level) => chatMessage = chatMessage.replaceAll(new RegExp(`\\b[a-zA-Z]+${level}\\b`, 'g'), ''));
+	var chatLine = createChatLine(userstate, chatMessage),
+		cheer = document.createElement('span'),
+		bitLevel = bitLevels.find((level) => parseInt(userstate.bits) >= level),
+		cheerIcon = document.createElement('img');
+
+	if (bitLevel == undefined) {
+		console.warn(`Could not parse bits received from ${userstate.username}`, userstate.bits);
+		return;
+	}
+	cheerIcon.src = `https://static-cdn.jtvnw.net/bits/dark/animated/${bitLevel}/1.5.gif`;
+	cheerIcon.alt = 'Bits';
+	cheer.appendChild(cheerIcon);
+	cheer.className = `cheer cheer-${bitLevel}`;
+	cheer.appendChild(document.createTextNode(userstate.bits));
+	chatLine.insertBefore(cheer, chatLine.lastChild);
+	addMessage(chatLine);
+}
+
 function handleMessageDeletion(channel, username, deletedMessage, userstate) {
 	var message = document.getElementById(userstate['target-msg-id']);
 	if (message) {
@@ -213,12 +238,14 @@ function handleMessageDeletion(channel, username, deletedMessage, userstate) {
 	}
 }
 
+
+/** Helper functions **/
 function createChatLine(userstate, message) {
+	// <div><span class="chat-user moderator">$username</span><span id="$msg-id">$message</span></div>
 	var chatLine = document.createElement('div'),
 		chatName = document.createElement('span'),
 		chatMessage = document.createElement('span');
 
-	// Fill chat line with content
 	chatName.className = 'chat-user';
 	if (userstate.mod) {
 		chatName.classList.add('moderator');
@@ -326,8 +353,6 @@ function formatLinks(text, originalText) {
 	return text;
 }
 
-
-/** Helper functions **/
 function ensureHash(text) {
 	if (!text.startsWith('#')) {
 		return '#' + text;

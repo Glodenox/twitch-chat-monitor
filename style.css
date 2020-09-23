@@ -81,6 +81,27 @@ body {
   color: inherit;
 }
 
+#chat .cheer, #chat .cheer img {
+  margin-right: 5px;
+  font-weight: 700;
+}
+
+#chat .cheer-1 {
+  color: gray;
+}
+#chat .cheer-100 {
+  color: cyan;
+}
+#chat .cheer-500 {
+  color: blue;
+}
+#chat .cheer-1000 {
+  color: red;
+}
+#chat .cheer-10000 {
+  color: yellow;
+}
+
 #settings-wheel {
   position: absolute;
   right: 5px;
