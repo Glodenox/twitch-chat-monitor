@@ -34,7 +34,7 @@ body {
   padding: 3px 1px 3px 6px;
   line-height: 35px;
   border-bottom: #444 solid 1px;
-  border-color: var(--separator-color);
+  border-bottom-color: var(--separator-color);
 }
 #chat > div:nth-child(odd) {
   background-color: #111;
@@ -72,9 +72,23 @@ body {
   color: var(--moderator-color);
 }
 
-#chat .subscription {
-  border-left: 4px solid #eee;
-  border-left-color: var(--text-color);
+#chat > div.highlight, #chat > div.notice {
+  padding-left: 12px;
+  border-left: 6px solid;
+}
+
+#chat > div.highlight {
+  border-left-color: #731180;
+  border-left-color: var(--highlight-color);
+  background-color: #73118030;
+  background-color: var(--highlight-background-color);
+}
+
+#chat > div.notice {
+  border-left-color: #eee;
+  border-left-color: var(--notice-color);
+  background-color: #eeeeee30;
+  background-color: var(--notice-background-color);
 }
 
 #chat a {
@@ -102,8 +116,14 @@ body {
   color: yellow;
 }
 
+#chat .emoticon {
+  width: 28px;
+  height: 28px;
+}
+
 #settings-wheel {
   position: absolute;
+  z-index: 10;
   right: 5px;
   bottom: 5px;
   opacity: 0.3;
@@ -131,6 +151,7 @@ body {
   border-color: var(--separator-color);
   background-color: black;
   background-color: var(--background-color);
+  opacity: 0.9;
 }
 
 .reverse-order #settings {
@@ -202,6 +223,7 @@ body {
 
 #settings input[type="number"], #settings input[type="text"], #settings input[type="submit"], #settings button {
   height: 32px;
+  padding: 0 5px;
   border: 2px solid #eee;
   border-color: var(--text-color);
   background-color: black;

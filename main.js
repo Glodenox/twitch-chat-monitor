@@ -16,11 +16,18 @@ var Settings = function() {
 	Object.assign(settings, previousSettings);
 	// Store all settings as CSS variables as well
 	Object.keys(settings).forEach((key) => document.body.style.setProperty('--' + key, settings[key]));
+	document.body.style.setProperty('--notice-background-color', settings['notice-color'] + '50');
+	document.body.style.setProperty('--highlight-background-color', settings['highlight-color'] + '50');
 
 	var update = (key, value) => {
 		settings[key] = value;
 		localStorage.setItem('config', JSON.stringify(settings));
 		document.body.style.setProperty('--' + key, value);
+		if (key == 'notice-color') {
+			document.body.style.setProperty('--notice-background-color', value + '50');
+		} else if (key == 'highlight-color') {
+			document.body.style.setProperty('--highlight-background-color', value + '50');
+		}
 	};
 	return {
 		'get': (key) => settings[key],
@@ -32,6 +39,9 @@ var Settings = function() {
 		}
 	}
 }();
+
+var highlightUsers = Settings.get('highlight-users').toLowerCase().split(',').filter((user) => user != ''),
+	highlightKeyphrases = Settings.get('highlight-keyphrases').toLowerCase().split(',').filter((phrase) => phrase != '');
 
 /** Set up chat client **/
 var options = {
@@ -49,26 +59,17 @@ client.addListener('resub', (channel, username, months, message, userstate, meth
 client.addListener('submysterygift', (channel, username, numbOfSubs, methods, userstate) => handleSubscription(username, null, userstate));
 client.addListener('cheer', handleCheer);
 client.addListener('raided', (channel, username, viewers) => addNotice(`${username} raided the channel with ${viewers} viewers!`));
-client.addListener('slowmode', (channel, enabled, length) => addNotice(`Slowmode chat has been ${enabled ? 'activated for ${length} seconds' : 'deactivated'}.`));
-client.addListener('followersonly', (channel, enabled, length) => addNotice(`Followers-only chat has been ${enabled ? 'activated for ${length} seconds' : 'deactivated'}.`));
+client.addListener('slowmode', (channel, enabled, length) => addNotice(`Slowmode chat has been ${enabled ? 'activated' : 'deactivated'}.`));
+client.addListener('followersonly', (channel, enabled, length) => addNotice(`Followers-only chat has been ${enabled ? 'activated' : 'deactivated'}.`));
 client.addListener('emoteonly', (channel, enabled) => addNotice(`Emote-only chat has been ${enabled ? 'activated' : 'deactivated'}.`));
 client.addListener('hosting', (channel, target, viewers) => addNotice(`The channel is now hosting ${target}.`));
 client.addListener('unhost', (channel, viewers) => addNotice(`The channel has stopped hosting another channel.`));
 client.addListener('messagedeleted', handleMessageDeletion);
+client.addListener('ban', (channel, username, reason, userstate) => handleModAction('ban', username, null, userstate));
+client.addListener('timeout', (channel, username, reason, duration, userstate) => handleModAction('timeout', username, duration, userstate));
 client.addListener('clearchat', (channel) => {
-	chat.innerHTML = '';
+	chat.textContent = '';
 	addNotice('Chat has been cleared by a moderator');
-});
-client.addListener('ban', (channel, username, reason, userstate) => {
-	if (Settings.get('show-mod-actions')) {
-		addNotice(`${username} has been banned.`);
-	}
-});
-client.addListener('timeout', (channel, username, reason, duration, userstate) => {
-	console.log('timeout', username, duration, userstate);
-	if (Settings.get('show-mod-actions')) {
-		addNotice(`${username} was given a time out for ${duration} seconds.`);
-	}
 });
 
 client.connect();
@@ -92,7 +93,7 @@ document.getElementById('settings-channel').form.addEventListener('submit', (e) 
 	e.preventDefault();
 });
 // Style
-['background-color', 'odd-background-color', 'separator-color', 'text-color', 'user-color', 'moderator-color'].forEach(key => {
+['background-color', 'odd-background-color', 'separator-color', 'text-color', 'user-color', 'moderator-color', 'notice-color', 'highlight-color'].forEach(key => {
 	document.getElementById('settings-' + key).value = Settings.get(key);
 	document.getElementById('settings-' + key).addEventListener('change', (e) => Settings.set(key, e.target.value));
 });
@@ -144,6 +145,16 @@ document.getElementById('settings-inline-images-height').addEventListener('input
 });
 document.getElementById('settings-unfurl-twitter').checked = Settings.get('unfurl-twitter');
 document.getElementById('settings-unfurl-twitter').addEventListener('click', () => Settings.toggle('unfurl-twitter'));
+document.getElementById('settings-highlight-users').value = Settings.get('highlight-users');
+document.getElementById('settings-highlight-users').addEventListener('input', (e) => {
+	Settings.set('highlight-users', e.target.value.toLowerCase());
+	highlightUsers = e.target.value.toLowerCase().split(',').filter((user) => user != '');
+});
+document.getElementById('settings-highlight-keyphrases').value = Settings.get('highlight-keyphrases');
+document.getElementById('settings-highlight-keyphrases').addEventListener('input', (e) => {
+	Settings.set('highlight-keyphrases', e.target.value.toLowerCase());
+	highlightKeyphrases = e.target.value.toLowerCase().split(',').filter((phrase) => phrase != '');
+});
 document.getElementById('settings-show-subscriptions').checked = Settings.get('show-subscriptions');
 document.getElementById('settings-show-subscriptions').addEventListener('click', () => Settings.toggle('show-subscriptions'));
 document.getElementById('settings-show-bits').checked = Settings.get('show-bits');
@@ -217,6 +228,15 @@ function handleChat(channel, userstate, message, self) {
 function handleRoomstate(channel, state) {
 	if (roomstate.channel != channel) {
 		addNotice(`Joined ${channel}.`);
+		if (state.slow) {
+			addNotice(`Channel is in slow mode.`);
+		}
+		if (state['followers-only'] != -1) {
+			addNotice(`Channel is in followers-only mode.`);
+		}
+		if (state['emote-only']) {
+			addNotice(`Channel is in emote-only mode.`);
+		}
 	}
 	roomstate = state;
 }
@@ -226,7 +246,7 @@ function handleSubscription(username, message, userstate) {
 		return;
 	}
 	var chatLine = document.createElement('div');
-	chatLine.className = 'subscription';
+	chatLine.className = 'highlight';
 
 	var subscriptionNotice = document.createElement('div');
 	subscriptionNotice.textContent = userstate['system-msg'].replaceAll('\\s', ' ');
@@ -239,9 +259,6 @@ function handleSubscription(username, message, userstate) {
 }
 
 function handleCheer(channel, userstate, message) {
-	if (!Settings.get('show-bits')) {
-		return;
-	}
 	// We could consider to transform the cheer emotes in the message instead of removing them (https://dev.twitch.tv/docs/irc/tags/#privmsg-twitch-tags)
 	var chatMessage = message;
 	bitLevels.forEach((level) => chatMessage = chatMessage.replaceAll(new RegExp(`\\b[a-zA-Z]+${level}\\b`, 'g'), ''));
@@ -250,25 +267,34 @@ function handleCheer(channel, userstate, message) {
 		bitLevel = bitLevels.find((level) => parseInt(userstate.bits) >= level),
 		cheerIcon = document.createElement('img');
 
-	if (bitLevel == undefined) {
-		console.warn(`Could not parse bits received from ${userstate.username}`, userstate.bits);
-		return;
+	if (Settings.get('show-bits')) {
+		if (bitLevel == undefined) {
+			console.warn(`Could not parse bits received from ${userstate.username}`, userstate.bits);
+			return;
+		}
+		cheerIcon.src = `https://static-cdn.jtvnw.net/bits/dark/animated/${bitLevel}/1.5.gif`;
+		cheerIcon.alt = 'Bits';
+		cheer.appendChild(cheerIcon);
+		cheer.className = `cheer cheer-${bitLevel}`;
+		cheer.appendChild(document.createTextNode(userstate.bits));
+		chatLine.insertBefore(cheer, chatLine.lastChild);
 	}
-	cheerIcon.src = `https://static-cdn.jtvnw.net/bits/dark/animated/${bitLevel}/1.5.gif`;
-	cheerIcon.alt = 'Bits';
-	cheer.appendChild(cheerIcon);
-	cheer.className = `cheer cheer-${bitLevel}`;
-	cheer.appendChild(document.createTextNode(userstate.bits));
-	chatLine.insertBefore(cheer, chatLine.lastChild);
 	addMessage(chatLine);
 }
 
 function handleMessageDeletion(channel, username, deletedMessage, userstate) {
-	var message = document.getElementById(userstate['target-msg-id']);
-	if (message) {
-		message.textContent = '<Message deleted>';
-		message.classList.add('deleted');
+	deleteMessage(document.getElementById(userstate['target-msg-id']));
+}
+
+function handleModAction(action, username, duration, userstate) {
+	if (Settings.get('show-mod-actions')) {
+		if (action == 'timeout') {
+			addNotice(`${username} was given a time out of ${duration} second${duration == 1 ? '' : 's'}.`);
+		} else if (action == 'ban') {
+			addNotice(`${username} has been banned.`);
+		}
 	}
+	Array.from(document.querySelectorAll(`#chat span[data-user="${userstate["target-user-id"]}"]`)).forEach(deleteMessage);
 }
 
 
@@ -286,6 +312,16 @@ function createChatLine(userstate, message) {
 	chatName.textContent = userstate['display-name'] || userstate.username;
 	chatMessage.innerHTML = formatMessage(message, userstate.emotes);
 	chatMessage.id = userstate.id;
+	if (userstate['user-id']) {
+		chatMessage.dataset.user = userstate['user-id'];
+	}
+
+	if (highlightUsers.indexOf(chatName.textContent.toLowerCase()) != -1) {
+		chatLine.className = 'highlight';
+	}
+	if (highlightKeyphrases.find((phrase) => message.toLowerCase().indexOf(phrase) != -1)) {
+		chatLine.className = 'highlight';
+	}
 
 	chatLine.appendChild(chatName);
 	chatLine.appendChild(chatMessage);
@@ -296,6 +332,7 @@ function createChatLine(userstate, message) {
 function addNotice(message) {
 	var chatLine = document.createElement('div');
 	chatLine.textContent = message;
+	chatLine.className = 'notice';
 	addMessage(chatLine);
 }
 
@@ -307,11 +344,21 @@ function addMessage(chatLine) {
 		chatContainer.scrollTop = chatContainer.scrollHeight - window.innerHeight;
 	}
 
-	// Check whether we can remove the two oldest messages
-	while (chat.childNodes.length > 2 && window.innerHeight + scrollDistance < chat.scrollHeight - chat.firstChild.scrollHeight - chat.childNodes[1].scrollHeight) {
+	// Check whether we can remove some of the oldest messages
+	while (chat.childNodes.length > 2 && chat.scrollHeight - (window.innerHeight + scrollDistance) > chat.firstChild.scrollHeight + chat.childNodes[1].scrollHeight) {
+		// Always remove two elements at the same time to prevent switching the odd and even rows
 		chat.firstChild.remove();
 		chat.firstChild.remove();
 	}
+}
+
+function deleteMessage(message) {
+	if (!message) {
+		return;
+	}
+	message.parentNode.style.height = message.parentNode.scrollHeight + 'px';
+	message.textContent = '<Message deleted>';
+	message.classList.add('deleted');
 }
 
 /*
@@ -359,15 +406,11 @@ function formatLinks(text, originalText) {
 				url = "https://media1.giphy.com/media/" + giphy[2].split("-").pop() + "/giphy.gif";
 			}
 			text.push('<br /><img class="user-image" src="' + url + '" alt="' + match[0] + '" />');
-			replaceText(text, '', match.index, match.index + match[0].length - 1);
-			continue;
 		}
 		if (Settings.get('unfurl-twitter') && match[3] == 'twitter.com/' && match[4] != undefined) {
 			var twitter = /^https?:\/\/(www\.)?twitter\.com.+\/([0-9]+)$/gm.exec(match[0]);
 			if (twitter) {
 				text.push('<div data-tweet="' + twitter[2] + '"></div>');
-				replaceText(text, '', match.index, match.index + match[0].length - 1);
-				continue;
 			}
 		}
 		if (Settings.get('shorten-urls')) {

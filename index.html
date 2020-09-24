@@ -26,6 +26,8 @@
           <div>Text<br/><input type="color" id="settings-text-color"/></div>
           <div>User<br/><input type="color" id="settings-user-color"/></div>
           <div>Moderator<br/><input type="color" id="settings-moderator-color"/></div>
+          <div>Notice<br/><input type="color" id="settings-notice-color"/></div>
+          <div>Highlight<br/><input type="color" id="settings-highlight-color"/></div>
         </div>
       </div>
       <div>
@@ -45,6 +47,8 @@
           <div class="subfield hidden"><label>Maximum image size: <input type="number" size="2" max="80" min="5" id="settings-inline-images-height" />% of available screen height</label></div>
         </div>
         <div><label><input type="checkbox" id="settings-unfurl-twitter"> Unfurl Twitter links</label></div>
+        <div><label>Highlight messages from <input type="text" placeholder="usernames separated by commas" id="settings-highlight-users" size="35" /></label></div>
+        <div><label>Highlight messages containing <input type="text" placeholder="keyphrases separated by commas" id="settings-highlight-keyphrases" size="35" /></label></div>
       </div>
       <div>
         <h3>Message Types</h3>
@@ -83,6 +87,10 @@ var defaultSettings = {
   'text-color': '#eeeeee',
   'user-color': '#008000',
   'moderator-color': '#8383f9',
+  'notice-color': '#eeeeee',
+  'highlight-color': '#731180',
+  'highlight-users': '',
+  'highlight-keyphrases': '',
   'show-subscriptions': true,
   'show-bits': true,
   'show-mod-actions': false
