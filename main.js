@@ -444,7 +444,8 @@ function formatEmotes(text, emotes) {
 		emotes[id].forEach((range) => {
 			if (typeof range == 'string') {
 				range = range.split('-').map(index => parseInt(index));
-				replaceText(text, `<img class="emoticon" src="https://static-cdn.jtvnw.net/emoticons/v2/${id}/default/dark/1.0" />`, range[0], range[1]);
+				var emote = text.slice(range[0], range[1] + 1).join('');
+				replaceText(text, `<img class="emoticon" src="https://static-cdn.jtvnw.net/emoticons/v2/${id}/default/dark/1.0" alt="${emote}" title="${emote}" />`, range[0], range[1]);
 			}
 		});
 	};
@@ -461,11 +462,13 @@ function formatLinks(text, originalText) {
 		}
 		var path = match[4] || '';
 		if (Settings.get('inline-images')) {
+			var giphy = /^https?:\/\/giphy\.com\/gifs\/(.*-)?([a-zA-Z0-9]+)$/gm.exec(urlText);
+			if (giphy) {
+				console.log('giphy', url);
+				url = `https://media1.giphy.com/media/${giphy[2].split("-").pop()}/giphy.gif`;
+				path = `media/${giphy[2].split("-").pop()}/giphy.gif`;
+			}
 			if (match[1] && imageExtensions.some((extension) => path.endsWith(extension))) {
-				var giphy = /^https?:\/\/giphy\.com\/gifs\/(.*-)?([a-zA-Z0-9]+)$/gm.exec(urlText.textContent);
-				if (giphy) {
-					url = `https://media1.giphy.com/media/${giphy[2].split("-").pop()}/giphy.gif`;
-				}
 				text.push(`<br /><img class="user-image" src="${url}" alt="" />`);
 			}
 		}

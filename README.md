@@ -19,10 +19,19 @@ Note that all these features can be enabled or disabled.
 * Load Twitter messages linked to by users
 * Shorten links posted in chat
 * Store settings over sessions or adjust default settings in the HTML page for portability
+* Optionally show timestamps next to messages
 
-Several more features are in the pipeline!
+Several more features are in [the pipeline](https://github.com/Glodenox/twitch-chat-monitor/issues)!
 
 ## How to use
+
+### Pre-hosted on github.io
+
+The latest version of the tool is hosted on [https://glodenox.github.io/twitch-chat-monitor/](https://glodenox.github.io/twitch-chat-monitor/) and can be used from there.
+
+### Hosted on your own domain or locally
+
+In order to host the tool on your own domain or locally, you just need to [download the ZIP](https://github.com/Glodenox/twitch-chat-monitor/archive/master.zip) and place the files on a server. Alternatively you can also just open the `index.html` file locally.
 
 The project consists of 4 files:
 
@@ -30,5 +39,3 @@ The project consists of 4 files:
 * *main.js*: main JavaScript file
 * *tmi.js*: a copy of the [tmi.js JavaScript library for Twitch](https://github.com/tmijs/tmi.js)
 * *style.css*: CSS styles are stored here
-
-All you need to is copy these files to a folder and open the index.html file. Alternatively you could host these files on a static web server and open that page.
