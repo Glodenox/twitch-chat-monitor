@@ -12,6 +12,7 @@ var chat = document.getElementById('chat'),
 
 /** Store settings with a local cache. Storing these variables directly in localStorage would remove the variable's type information **/
 var Settings = function() {
+	var transparentBackgroundKeys = ['notice-color', 'highlight-color', 'channel-color'];
 	// Clone default settings so they can be used to reset
 	var settings = Object.assign({}, defaultSettings);
 	// Restore previous settings
@@ -19,17 +20,15 @@ var Settings = function() {
 	Object.assign(settings, previousSettings);
 	// Store all settings as CSS variables as well
 	Object.keys(settings).forEach((key) => document.body.style.setProperty('--' + key, settings[key]));
-	document.body.style.setProperty('--notice-background-color', settings['notice-color'] + '50');
-	document.body.style.setProperty('--highlight-background-color', settings['highlight-color'] + '50');
+	transparentBackgroundKeys.forEach((key) => document.body.style.setProperty('--' + key.replace('-color', '-background-color'), settings[key] + '50'));
 
 	var update = (key, value) => {
 		settings[key] = value;
 		localStorage.setItem('config', JSON.stringify(settings));
 		document.body.style.setProperty('--' + key, value);
-		if (key == 'notice-color') {
-			document.body.style.setProperty('--notice-background-color', value + '50');
-		} else if (key == 'highlight-color') {
-			document.body.style.setProperty('--highlight-background-color', value + '50');
+		// Generate transparent background color values
+		if (transparentBackgroundKeys.indexOf(key) != -1) {
+			document.body.style.setProperty(key.replace('-color', '-background-color'), value + '50');
 		}
 	};
 	return {
@@ -103,15 +102,12 @@ document.getElementById('settings-channel').form.addEventListener('submit', (e) 
 // Chat Behavior
 document.body.classList.toggle('reverse-order', !Settings.get('new-messages-on-top'));
 document.getElementById('settings-new-messages-on-top').checked = Settings.get('new-messages-on-top');
-document.getElementById('settings-new-messages-on-top').addEventListener('click', () => {
-	Settings.toggle('new-messages-on-top');
+configureToggler('new-messages-on-top', () => {
 	document.body.classList.toggle('reverse-order', !Settings.get('new-messages-on-top'));
 	scrollDistance = scrollReference = 0;
 	chatContainer.scrollTop = Settings.get('new-messages-on-top') ? 0 : chatContainer.scrollHeight - window.innerHeight;
 });
-document.getElementById('settings-smooth-scroll').checked = Settings.get('smooth-scroll');
-document.getElementById('settings-smooth-scroll').addEventListener('click', () => {
-	Settings.toggle('smooth-scroll');
+configureToggler('smooth-scroll', () => {
 	scrollDistance = scrollReference = 0;
 	chatContainer.scrollTop = Settings.get('new-messages-on-top') ? 0 : chatContainer.scrollHeight - window.innerHeight;
 	document.getElementById('settings-smooth-scroll').parentNode.nextElementSibling.classList.toggle('hidden', !Settings.get('smooth-scroll'));
@@ -127,15 +123,8 @@ document.getElementById('settings-smooth-scroll-duration').addEventListener('inp
 	}
 });
 // Message Handling
-document.getElementById('settings-format-urls').checked = Settings.get('format-urls');
-document.getElementById('settings-format-urls').addEventListener('click', () => Settings.toggle('format-urls'));
-document.getElementById('settings-shorten-urls').checked = Settings.get('shorten-urls');
-document.getElementById('settings-shorten-urls').addEventListener('click', () => Settings.toggle('shorten-urls'));
-document.getElementById('settings-inline-images').checked = Settings.get('inline-images');
-document.getElementById('settings-inline-images').addEventListener('click', () => {
-	Settings.toggle('inline-images');
-	document.getElementById('settings-inline-images').parentNode.nextElementSibling.classList.toggle('hidden', !Settings.get('inline-images'));
-});
+['format-urls', 'shorten-urls', 'unfurl-youtube', 'show-subscriptions', 'show-bits', 'show-mod-actions'].forEach(configureToggler);
+configureToggler('inline-images', () => document.getElementById('settings-inline-images').parentNode.nextElementSibling.classList.toggle('hidden', !Settings.get('inline-images')));
 if (Settings.get('inline-images')) {
 	document.getElementById('settings-inline-images').parentNode.nextElementSibling.classList.remove('hidden');
 }
@@ -146,10 +135,18 @@ document.getElementById('settings-inline-images-height').addEventListener('input
 		Settings.set('inline-images-height', height + 'vh');
 	}
 });
-document.getElementById('settings-unfurl-twitter').checked = Settings.get('unfurl-twitter');
-document.getElementById('settings-unfurl-twitter').addEventListener('click', () => Settings.toggle('unfurl-twitter'));
-document.getElementById('settings-unfurl-youtube').checked = Settings.get('unfurl-youtube');
-document.getElementById('settings-unfurl-youtube').addEventListener('click', () => Settings.toggle('unfurl-youtube'));
+configureToggler('unfurl-twitter', () => {
+	if (typeof twttr == 'undefined') {
+		var twitterScript = document.createElement('script');
+		twitterScript.src = 'https://platform.twitter.com/widgets.js';
+		document.body.appendChild(twitterScript);
+	}
+});
+if (Settings.get('unfurl-twitter')) {
+	var twitterScript = document.createElement('script');
+	twitterScript.src = 'https://platform.twitter.com/widgets.js';
+	document.body.appendChild(twitterScript);
+}
 document.getElementById('settings-highlight-users').value = Settings.get('highlight-users');
 document.getElementById('settings-highlight-users').addEventListener('input', (e) => {
 	Settings.set('highlight-users', e.target.value.toLowerCase());
@@ -160,17 +157,7 @@ document.getElementById('settings-highlight-keyphrases').addEventListener('input
 	Settings.set('highlight-keyphrases', e.target.value.toLowerCase());
 	highlightKeyphrases = e.target.value.toLowerCase().split(',').filter((phrase) => phrase != '');
 });
-document.getElementById('settings-show-subscriptions').checked = Settings.get('show-subscriptions');
-document.getElementById('settings-show-subscriptions').addEventListener('click', () => Settings.toggle('show-subscriptions'));
-document.getElementById('settings-show-bits').checked = Settings.get('show-bits');
-document.getElementById('settings-show-bits').addEventListener('click', () => Settings.toggle('show-bits'));
-document.getElementById('settings-show-mod-actions').checked = Settings.get('show-mod-actions');
-document.getElementById('settings-show-mod-actions').addEventListener('click', () => Settings.toggle('show-mod-actions'));
-document.getElementById('settings-show-fps').checked = Settings.get('show-fps');
-document.getElementById('settings-show-fps').addEventListener('click', (e) => {
-	Settings.toggle('show-fps');
-	handleFPS(e.target.checked);
-});
+configureToggler('show-fps', (e) => handleFPS(e.target.checked));
 if (Settings.get('show-fps')) {
 	handleFPS(true);
 }
@@ -345,6 +332,16 @@ function updateFPS() {
 
 
 /** Helper functions **/
+function configureToggler(key, callback) {
+	document.getElementById(`settings-${key}`).checked = Settings.get(key);
+	document.getElementById(`settings-${key}`).addEventListener('click', (e) => {
+		Settings.toggle(key);
+		if (callback) {
+			callback(e);
+		}
+	});
+}
+
 function createChatLine(userstate, message) {
 	// <div><span class="chat-user moderator">$username</span><span id="$msg-id">$message</span></div>
 	var chatLine = document.createElement('div'),
@@ -356,6 +353,9 @@ function createChatLine(userstate, message) {
 		chatName.classList.add('moderator');
 	}
 	chatName.textContent = userstate['display-name'] || userstate.username;
+	if (chatName.textContent.toLowerCase() == removeHash(Settings.get('channel')).toLowerCase()) {
+		chatLine.className = 'highlight channel';
+	}
 	chatMessage.innerHTML = formatMessage(message, userstate.emotes);
 	chatMessage.id = userstate.id;
 	if (userstate['user-id']) {
@@ -489,6 +489,13 @@ function formatLinks(text, originalText) {
 function ensureHash(text) {
 	if (!text.startsWith('#')) {
 		return '#' + text;
+	}
+	return text;
+}
+
+function removeHash(text) {
+	if (text.startsWith('#')) {
+		return text.substring(1);
 	}
 	return text;
 }

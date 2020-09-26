@@ -3,8 +3,8 @@
   <head>
     <meta charset="utf-8">
     <title>Chat Monitor</title>
-    <link href="https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300,700&display=swap" rel="stylesheet" type="text/css">
-    <link href="style.css" rel="stylesheet" type="text/css">
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300,700&display=swap" rel="stylesheet" type="text/css"/>
+    <link href="style.css" rel="stylesheet" type="text/css"/>
   </head>
   <body>
     <div id="curtain" class="hidden">
@@ -16,7 +16,7 @@
       <h2>Settings</h2>
       <div>
         <h3>Twitch</h3>
-        <div><form action="#"><label>Twitch channel: <input type="text" id="settings-channel" required="required" /></label> <input type="submit" value="Join" /></form></div>
+        <div><form action="#"><label>Twitch channel: <input type="text" id="settings-channel" required="required"/></label> <input type="submit" value="Join"/></form></div>
       </div>
       <div>
         <h3>Style</h3>
@@ -27,44 +27,45 @@
           <div>Text<br/><input type="color" id="settings-text-color"/></div>
           <div>User<br/><input type="color" id="settings-user-color"/></div>
           <div>Moderator<br/><input type="color" id="settings-moderator-color"/></div>
+          <div>Channel<br/><input type="color" id="settings-channel-color"/></div>
           <div>Notice<br/><input type="color" id="settings-notice-color"/></div>
           <div>Highlight<br/><input type="color" id="settings-highlight-color"/></div>
         </div>
       </div>
       <div>
         <h3>Chat Behavior</h3>
-        <div><label><input type="checkbox" id="settings-new-messages-on-top"> New messages appear at the top</label></div>
+        <div><label><input type="checkbox" id="settings-new-messages-on-top"/> New messages appear at the top</label></div>
         <div>
-          <label><input type="checkbox" id="settings-smooth-scroll"> Smooth scrolling</label>
-          <div class="subfield hidden"><label>Time allowed for message to appear: <input type="number" size="5" max="10000" min="1" id="settings-smooth-scroll-duration" /> milliseconds</label></div>
+          <label><input type="checkbox" id="settings-smooth-scroll"/> Smooth scrolling</label>
+          <div class="subfield hidden"><label>Time allowed for message to appear: <input type="number" size="5" max="10000" min="1" id="settings-smooth-scroll-duration"/> milliseconds</label></div>
         </div>
       </div>
       <div>
         <h3>Message Handling</h3>
-        <div><label><input type="checkbox" id="settings-format-urls"> Turn URLs into clickable links</label></div>
-        <div><label><input type="checkbox" id="settings-shorten-urls"> Shorten long URLs</label></div>
+        <div><label><input type="checkbox" id="settings-format-urls"/> Turn URLs into clickable links</label></div>
+        <div><label><input type="checkbox" id="settings-shorten-urls"/> Shorten long URLs</label></div>
         <div>
-          <label><input type="checkbox" id="settings-inline-images"> Show any images linked to by users</label>
-          <div class="subfield hidden"><label>Maximum image size: <input type="number" size="2" max="80" min="5" id="settings-inline-images-height" />% of available screen height</label></div>
+          <label><input type="checkbox" id="settings-inline-images"/> Show any images linked to by users</label>
+          <div class="subfield hidden"><label>Maximum image size: <input type="number" size="2" max="80" min="5" id="settings-inline-images-height"/>% of available screen height</label></div>
         </div>
-        <div><label><input type="checkbox" id="settings-unfurl-twitter"> Unfurl Twitter links</label></div>
-        <div><label><input type="checkbox" id="settings-unfurl-youtube"> Unfurl YouTube links</label></div>
-        <div class="subfield hidden"><label><input type="checkbox" id="settings-play-youtube"> Show and autoplay YouTube videos</label></div>
-        <div><label>Highlight messages from <input type="text" placeholder="usernames separated by commas" id="settings-highlight-users" size="35" /></label></div>
-        <div><label>Highlight messages containing <input type="text" placeholder="keyphrases separated by commas" id="settings-highlight-keyphrases" size="35" /></label></div>
+        <div><label><input type="checkbox" id="settings-unfurl-twitter"/> Unfurl Twitter links</label></div>
+        <div><label><input type="checkbox" id="settings-unfurl-youtube"/> Unfurl YouTube links</label></div>
+        <div class="subfield hidden"><label><input type="checkbox" id="settings-play-youtube"/> Show and autoplay YouTube videos</label></div>
+        <div><label>Highlight messages from <input type="text" placeholder="usernames separated by commas" id="settings-highlight-users" size="35"/></label></div>
+        <div><label>Highlight messages containing <input type="text" placeholder="keyphrases separated by commas" id="settings-highlight-keyphrases" size="35"/></label></div>
       </div>
       <div>
         <h3>Message Types</h3>
         <div class="fields">
-          <div><label><input type="checkbox" id="settings-show-subscriptions"> Subscriptions</label></div>
-          <div><label><input type="checkbox" id="settings-show-bits"> Bits</label></div>
-          <div><label><input type="checkbox" id="settings-show-mod-actions"> Mod actions</label></div>
+          <div><label><input type="checkbox" id="settings-show-subscriptions"/> Subscriptions</label></div>
+          <div><label><input type="checkbox" id="settings-show-bits"/> Bits</label></div>
+          <div><label><input type="checkbox" id="settings-show-mod-actions"/> Mod actions</label></div>
         </div>
       </div>
       <div>
         <h3>Stats for Nerds</h3>
         <div class="fields">
-          <div><label><input type="checkbox" id="settings-show-fps"> FPS</label></div>
+          <div><label><input type="checkbox" id="settings-show-fps"/> FPS</label></div>
         </div>
       </div>
       <div>Some changes will only be applied to new incoming messages</div>
@@ -76,7 +77,6 @@
 
     <!-- Obtained from https://gitcdn.xyz/repo/tmijs/cdn/master/latest/1.x/tmi.min.js, which comes from https://github.com/tmijs/tmi.js -->
     <script src="tmi.min.js"></script>
-    <script src="https://platform.twitter.com/widgets.js"></script>
     <script>
 // These values are only the initial values and can get overwritten
 var defaultSettings = {
@@ -97,6 +97,7 @@ var defaultSettings = {
   'text-color': '#eeeeee',
   'user-color': '#008000',
   'moderator-color': '#8383f9',
+  'channel-color': '#0d86ff',
   'notice-color': '#eeeeee',
   'highlight-color': '#731180',
   'highlight-users': '',
