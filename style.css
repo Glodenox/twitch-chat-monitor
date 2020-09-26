@@ -45,6 +45,10 @@ body {
   font-style: italic;
 }
 
+#chat .timestamp {
+  margin-right: 5px;
+}
+
 #chat img {
   max-width: 100%;
   max-height: 50vh;
@@ -153,7 +157,7 @@ body {
 #fps {
   position: absolute;
   right: 15px;
-  bottom: 45px;
+  top: 15px;
   border: 2px solid #eee;
   border-color: var(--text-color);
   border-radius: 10px;
@@ -165,8 +169,8 @@ body {
 }
 
 .reverse-order #fps {
-  top: 15px;
-  bottom: auto;
+  top: auto;
+  bottom: 15px;
 }
 
 #settings {
@@ -278,4 +282,12 @@ body {
   padding: 5px;
   height: 32px;
   cursor: pointer;
+}
+
+#settings select {
+  font-size: 0.625em;
+  color: #eee;
+  border-color: var(--text-color);
+  background-color: black;
+  background-color: var(--background-color);
 }

@@ -51,6 +51,15 @@
         <div><label><input type="checkbox" id="settings-unfurl-twitter"/> Unfurl Twitter links</label></div>
         <div><label><input type="checkbox" id="settings-unfurl-youtube"/> Unfurl YouTube links</label></div>
         <div class="subfield hidden"><label><input type="checkbox" id="settings-play-youtube"/> Show and autoplay YouTube videos</label></div>
+        <div><label>Show timestamps: 
+          <select id="settings-timestamps">
+            <option value="">None</option>
+            <option value="short24">23:59</option>
+            <option value="long24">23:59:00</option>
+            <option value="short12">11:59 PM</option>
+            <option value="long12">11:59:00 PM</option>
+          </select></label>
+        </div>
         <div><label>Highlight messages from <input type="text" placeholder="usernames separated by commas" id="settings-highlight-users" size="35"/></label></div>
         <div><label>Highlight messages containing <input type="text" placeholder="keyphrases separated by commas" id="settings-highlight-keyphrases" size="35"/></label></div>
       </div>
@@ -90,6 +99,7 @@ var defaultSettings = {
   'inline-images-height': '30vh',
   'unfurl-twitter': false,
   'unfurl-youtube': false,
+  'timestamps': '',
    // Make sure to enter full rgb definitions here as the color input fields don't accept other values
   'background-color': '#000000',
   'odd-background-color': '#111111',

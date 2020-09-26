@@ -147,6 +147,8 @@ if (Settings.get('unfurl-twitter')) {
 	twitterScript.src = 'https://platform.twitter.com/widgets.js';
 	document.body.appendChild(twitterScript);
 }
+document.getElementById('settings-timestamps').value = Settings.get('timestamps');
+document.getElementById('settings-timestamps').addEventListener('change', (e) => Settings.set('timestamps', e.target.value));
 document.getElementById('settings-highlight-users').value = Settings.get('highlight-users');
 document.getElementById('settings-highlight-users').addEventListener('input', (e) => {
 	Settings.set('highlight-users', e.target.value.toLowerCase());
@@ -345,9 +347,21 @@ function configureToggler(key, callback) {
 function createChatLine(userstate, message) {
 	// <div><span class="chat-user moderator">$username</span><span id="$msg-id">$message</span></div>
 	var chatLine = document.createElement('div'),
+		chatTimestamp = document.createElement('span'),
 		chatName = document.createElement('span'),
 		chatMessage = document.createElement('span');
 
+	if (Settings.get('timestamps') != '') {
+		var formats = {
+			'short24': (now) => now.toLocaleTimeString('en-GB').replace(/:\d\d$/, ''),
+			'long24': (now) => now.toLocaleTimeString('en-GB'),
+			'short12': (now) => now.toLocaleTimeString('en-US').replace(/:\d\d /, ' ').replace(/^(\d):/, '0$1:'),
+			'long12': (now) => now.toLocaleTimeString('en-US').replace(/^(\d):/, '0$1:')
+		};
+		chatTimestamp.className = 'timestamp';
+		chatTimestamp.textContent = formats[Settings.get('timestamps')](new Date());
+		chatLine.appendChild(chatTimestamp);
+	}
 	chatName.className = 'chat-user';
 	if (userstate.mod) {
 		chatName.classList.add('moderator');
