@@ -11,6 +11,7 @@
       <p>Chat hidden - press Ctrl+Shift+H to reveal</p>
     </div>
     <div id="settings-wheel" title="Ctrl+Shift+S">⚙ Settings</div>
+    <div id="fps" class="hidden"></div>
     <div id="settings" class="hidden">
       <h2>Settings</h2>
       <div>
@@ -47,6 +48,8 @@
           <div class="subfield hidden"><label>Maximum image size: <input type="number" size="2" max="80" min="5" id="settings-inline-images-height" />% of available screen height</label></div>
         </div>
         <div><label><input type="checkbox" id="settings-unfurl-twitter"> Unfurl Twitter links</label></div>
+        <div><label><input type="checkbox" id="settings-unfurl-youtube"> Unfurl YouTube links</label></div>
+        <div class="subfield hidden"><label><input type="checkbox" id="settings-play-youtube"> Show and autoplay YouTube videos</label></div>
         <div><label>Highlight messages from <input type="text" placeholder="usernames separated by commas" id="settings-highlight-users" size="35" /></label></div>
         <div><label>Highlight messages containing <input type="text" placeholder="keyphrases separated by commas" id="settings-highlight-keyphrases" size="35" /></label></div>
       </div>
@@ -56,6 +59,12 @@
           <div><label><input type="checkbox" id="settings-show-subscriptions"> Subscriptions</label></div>
           <div><label><input type="checkbox" id="settings-show-bits"> Bits</label></div>
           <div><label><input type="checkbox" id="settings-show-mod-actions"> Mod actions</label></div>
+        </div>
+      </div>
+      <div>
+        <h3>Stats for Nerds</h3>
+        <div class="fields">
+          <div><label><input type="checkbox" id="settings-show-fps"> FPS</label></div>
         </div>
       </div>
       <div>Some changes will only be applied to new incoming messages</div>
@@ -78,8 +87,9 @@ var defaultSettings = {
   'format-urls': true,
   'shorten-urls': true,
   'inline-images': false,
-  'inline-images-height': '50vh',
-  'unfurl-twitter': true,
+  'inline-images-height': '30vh',
+  'unfurl-twitter': false,
+  'unfurl-youtube': false,
    // Make sure to enter full rgb definitions here as the color input fields don't accept other values
   'background-color': '#000000',
   'odd-background-color': '#111111',
@@ -93,7 +103,8 @@ var defaultSettings = {
   'highlight-keyphrases': '',
   'show-subscriptions': true,
   'show-bits': true,
-  'show-mod-actions': false
+  'show-mod-actions': false,
+  'show-fps': false
 };
     </script>
     <script src="main.js"></script>

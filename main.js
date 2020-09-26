@@ -4,7 +4,10 @@ var chat = document.getElementById('chat'),
 	scrollReference = 0, // Distance when we started scrolling
 	imageExtensions = ['.jpg', '.jpeg', '.gif', '.png', '.webp', '.av1'],
 	roomstate = {},
-	bitLevels = [ 10000, 1000, 500, 100, 1 ];
+	bitLevels = [ 10000, 1000, 500, 100, 1 ],
+	frames = 0,
+	fpsInterval,
+	lastFrameReset;
 
 
 /** Store settings with a local cache. Storing these variables directly in localStorage would remove the variable's type information **/
@@ -145,6 +148,8 @@ document.getElementById('settings-inline-images-height').addEventListener('input
 });
 document.getElementById('settings-unfurl-twitter').checked = Settings.get('unfurl-twitter');
 document.getElementById('settings-unfurl-twitter').addEventListener('click', () => Settings.toggle('unfurl-twitter'));
+document.getElementById('settings-unfurl-youtube').checked = Settings.get('unfurl-youtube');
+document.getElementById('settings-unfurl-youtube').addEventListener('click', () => Settings.toggle('unfurl-youtube'));
 document.getElementById('settings-highlight-users').value = Settings.get('highlight-users');
 document.getElementById('settings-highlight-users').addEventListener('input', (e) => {
 	Settings.set('highlight-users', e.target.value.toLowerCase());
@@ -161,16 +166,24 @@ document.getElementById('settings-show-bits').checked = Settings.get('show-bits'
 document.getElementById('settings-show-bits').addEventListener('click', () => Settings.toggle('show-bits'));
 document.getElementById('settings-show-mod-actions').checked = Settings.get('show-mod-actions');
 document.getElementById('settings-show-mod-actions').addEventListener('click', () => Settings.toggle('show-mod-actions'));
+document.getElementById('settings-show-fps').checked = Settings.get('show-fps');
+document.getElementById('settings-show-fps').addEventListener('click', (e) => {
+	Settings.toggle('show-fps');
+	handleFPS(e.target.checked);
+});
+if (Settings.get('show-fps')) {
+	handleFPS(true);
+}
 
 // Hotkeys
 document.body.addEventListener('keydown', (e) => {
-	if ((e.key == "H" || e.key == "h") && e.shiftKey && e.ctrlKey) {
+	if ((e.key == 'H' || e.key == 'h') && e.shiftKey && e.ctrlKey) {
 		document.getElementById('curtain').classList.toggle('hidden');
-	} else if ((e.key == "S" || e.key == "s") && e.shiftKey && e.ctrlKey) {
+	} else if ((e.key == 'S' || e.key == 's') && e.shiftKey && e.ctrlKey) {
 		document.getElementById('settings').classList.toggle('hidden');
 		document.getElementById('settings').scrollTop = 0;
 		document.getElementById('settings-wheel').classList.toggle('open');
-	} else if ((e.key == "Escape")) {
+	} else if ((e.key == 'Escape')) {
 		document.getElementById('settings').classList.add('hidden');
 		document.getElementById('settings-wheel').classList.remove('open');
 	}
@@ -180,6 +193,9 @@ document.body.addEventListener('keydown', (e) => {
 // Continually scroll, in a way to make the comments readable
 var lastFrame = +new Date();
 function scrollUp(now) {
+	if (Settings.get('show-fps')) {
+		frames++;
+	}
 	if (Settings.get('smooth-scroll') && scrollDistance > 0) {
 		// Estimate how far along we are in scrolling in the current scroll reference
 		var currentStep = Settings.get('smooth-scroll-duration') / (now - lastFrame);
@@ -203,6 +219,17 @@ function handleChat(channel, userstate, message, self) {
 		userImages.filter((userImage) => !userImage.complete).forEach((userImage) => {
 			userImage.style.display = 'none';
 			userImage.addEventListener('load', () => {
+				if (userImage.dataset.mq && userImage.naturalWidth == 120) { // Failed to load, placeholder received
+					if (userImage.dataset.hq) {
+						userImage.src = userImage.dataset.hq;
+						userImage.dataset.hq = '';
+						return;
+					} else if (userImage.dataset.mq) {
+						userImage.src = userImage.dataset.mq;
+						userImage.dataset.mq = '';
+						return;
+					}
+				}
 				var oldChatLineHeight = chatLine.scrollHeight;
 				userImage.style.display = 'inline';
 				scrollReference = scrollDistance += Math.max(0, chatLine.scrollHeight - oldChatLineHeight);
@@ -297,6 +324,25 @@ function handleModAction(action, username, duration, userstate) {
 	Array.from(document.querySelectorAll(`#chat span[data-user="${userstate["target-user-id"]}"]`)).forEach(deleteMessage);
 }
 
+function handleFPS(enable) {
+	document.getElementById('fps').innerHTML = '&nbsp;';
+	document.getElementById('fps').classList.toggle('hidden', !enable);
+	lastFrameReset = Date.now();
+	frames = 0;
+	if (enable) {
+		fpsInterval = setInterval(updateFPS, 1000);
+	} else {
+		clearInterval(fpsInterval);
+	}
+}
+
+function updateFPS() {
+	var currentFrameTime = Date.now();
+	document.getElementById('fps').textContent = (frames / (currentFrameTime - lastFrameReset) * 1000).toFixed(1);
+	lastFrameReset = currentFrameTime;
+	frames = 0;
+}
+
 
 /** Helper functions **/
 function createChatLine(userstate, message) {
@@ -356,7 +402,7 @@ function deleteMessage(message) {
 	if (!message) {
 		return;
 	}
-	message.parentNode.style.height = message.parentNode.scrollHeight + 'px';
+	message.parentNode.style.height = (message.parentNode.scrollHeight - 7) + 'px'; // 2 x 3px padding + 1px border = 7
 	message.textContent = '<Message deleted>';
 	message.classList.add('deleted');
 }
@@ -384,7 +430,7 @@ function formatEmotes(text, emotes) {
 		emotes[id].forEach((range) => {
 			if (typeof range == 'string') {
 				range = range.split('-').map(index => parseInt(index));
-				replaceText(text, '<img class="emoticon" src="https://static-cdn.jtvnw.net/emoticons/v2/' + id + '/default/dark/1.0" />', range[0], range[1]);
+				replaceText(text, `<img class="emoticon" src="https://static-cdn.jtvnw.net/emoticons/v2/${id}/default/dark/1.0" />`, range[0], range[1]);
 			}
 		});
 	};
@@ -400,17 +446,26 @@ function formatLinks(text, originalText) {
 			url = 'https://' + url;
 		}
 		var path = match[4] || '';
-		if (Settings.get('inline-images') && match[1] && imageExtensions.some((extension) => path.endsWith(extension))) {
-			var giphy = /^https?:\/\/giphy\.com\/gifs\/(.*-)?([a-zA-Z0-9]+)$/gm.exec(urlText.textContent);
-			if (giphy) {
-				url = "https://media1.giphy.com/media/" + giphy[2].split("-").pop() + "/giphy.gif";
+		if (Settings.get('inline-images')) {
+			if (match[1] && imageExtensions.some((extension) => path.endsWith(extension))) {
+				var giphy = /^https?:\/\/giphy\.com\/gifs\/(.*-)?([a-zA-Z0-9]+)$/gm.exec(urlText.textContent);
+				if (giphy) {
+					url = `https://media1.giphy.com/media/${giphy[2].split("-").pop()}/giphy.gif`;
+				}
+				text.push(`<br /><img class="user-image" src="${url}" alt="" />`);
 			}
-			text.push('<br /><img class="user-image" src="' + url + '" alt="' + match[0] + '" />');
 		}
+		if (Settings.get('unfurl-youtube') && (match[3] == 'youtube.com/' || match[3] == 'youtu.be/')) {
+			var youtube = /^https?:\/\/(www\.)?(youtu\.be\/|youtube\.com\/watch\?v=)([^&?]+).*$/gm.exec(url);
+			if (youtube) {
+				text.push(`<br /><img src="https://img.youtube.com/vi/${youtube[3]}/maxresdefault.jpg" class="user-image" alt="YouTube video preview" data-hq="https://img.youtube.com/vi/${youtube[3]}/hqdefault.jpg" data-mq="https://img.youtube.com/vi/${youtube[3]}/mqdefault.jpg" />`);
+			}
+		}
+
 		if (Settings.get('unfurl-twitter') && match[3] == 'twitter.com/' && match[4] != undefined) {
 			var twitter = /^https?:\/\/(www\.)?twitter\.com.+\/([0-9]+)$/gm.exec(match[0]);
 			if (twitter) {
-				text.push('<div data-tweet="' + twitter[2] + '"></div>');
+				text.push(`<div data-tweet="${twitter[2]}"></div>`);
 			}
 		}
 		if (Settings.get('shorten-urls')) {
@@ -425,7 +480,7 @@ function formatLinks(text, originalText) {
 				}
 			}
 		}
-		var replacement = Settings.get('format-urls') ? '<a href="' + url + '" target="_blank" rel="noreferrer noopener">' + urlText + '</a>' : urlText;
+		var replacement = Settings.get('format-urls') ? `<a href="${url}" target="_blank" rel="noreferrer noopener">${urlText}</a>` : urlText;
 		replaceText(text, replacement, match.index, match.index + match[0].length - 1);
 	}
 	return text;
