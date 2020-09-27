@@ -137,6 +137,18 @@ body {
   height: 28px;
 }
 
+#chat .counter {
+  font-weight: bold;
+  float: right;
+  font-size: 80%;
+  transition: 1s;
+  padding-right: 10px;
+}
+#chat .counter.bump {
+  transition: 0.1s;
+  font-size: 150%;
+}
+
 #settings-wheel {
   position: absolute;
   z-index: 10;
@@ -190,7 +202,7 @@ body {
 }
 
 .reverse-order #settings {
-  top: 30px;
+  top: 60px;
   bottom: auto;
 }
 

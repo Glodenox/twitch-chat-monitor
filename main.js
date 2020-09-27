@@ -123,7 +123,7 @@ document.getElementById('settings-smooth-scroll-duration').addEventListener('inp
 	}
 });
 // Message Handling
-['format-urls', 'shorten-urls', 'unfurl-youtube', 'show-subscriptions', 'show-bits', 'show-mod-actions'].forEach(configureToggler);
+['combine-messages', 'format-urls', 'shorten-urls', 'unfurl-youtube', 'show-subscriptions', 'show-bits', 'show-mod-actions'].forEach(configureToggler);
 configureToggler('inline-images', () => document.getElementById('settings-inline-images').parentNode.nextElementSibling.classList.toggle('hidden', !Settings.get('inline-images')));
 if (Settings.get('inline-images')) {
 	document.getElementById('settings-inline-images').parentNode.nextElementSibling.classList.remove('hidden');
@@ -200,7 +200,30 @@ window.requestAnimationFrame(scrollUp);
 
 /** Chat event handling **/
 function handleChat(channel, userstate, message, self) {
+	// If enabled, combine messages instead of adding a new message
+	var id = 'message-' + message.toLowerCase().replace(/[^a-z0-9:]/g, '');
+	if (Settings.get('combine-messages') && document.getElementById(id)) {
+		var matchedMessage = document.getElementById(id);
+		if (!matchedMessage.counter) {
+			var counterContainer = document.createElement('span'),
+				counter = document.createElement('span');
+			counterContainer.className = 'counter';
+			counterContainer.innerHTML = '&times; ';
+			counterContainer.appendChild(counter);
+			counter.textContent = '1';
+			matchedMessage.appendChild(counterContainer);
+			matchedMessage.counter = counter;
+		}
+		chat.appendChild(matchedMessage);
+		matchedMessage.querySelector('.counter').classList.add('bump');
+		matchedMessage.counter.textContent++;
+		setTimeout(() => matchedMessage.querySelector('.counter').classList.remove('bump'), 150);
+		return;
+	}
 	var chatLine = createChatLine(userstate, message);
+	if (Settings.get('combine-messages')) {
+		chatLine.id = id;
+	}
 
 	// Deal with loading user-provided inline images
 	var userImages = Array.from(chatLine.querySelectorAll('img.user-image'));
