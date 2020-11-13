@@ -80,7 +80,7 @@ client.connect();
 /** Interface interactions **/
 document.getElementById('settings-wheel').addEventListener('click', () => {
 	document.getElementById('settings').classList.toggle('hidden');
-	document.getElementById('settings').scrollTop = 0;
+	document.getElementById('settings').style.marginTop = '0px';
 	document.getElementById('settings-wheel').classList.toggle('open');
 });
 // Twitch
@@ -105,11 +105,11 @@ document.getElementById('settings-new-messages-on-top').checked = Settings.get('
 configureToggler('new-messages-on-top', () => {
 	document.body.classList.toggle('reverse-order', !Settings.get('new-messages-on-top'));
 	scrollDistance = scrollReference = 0;
-	chatContainer.scrollTop = Settings.get('new-messages-on-top') ? 0 : chatContainer.scrollHeight - window.innerHeight;
+	chat.style.marginTop = Settings.get('new-messages-on-top') ? '0px' : -(chatContainer.scrollHeight - window.innerHeight) + 'px';
 });
 configureToggler('smooth-scroll', () => {
 	scrollDistance = scrollReference = 0;
-	chatContainer.scrollTop = Settings.get('new-messages-on-top') ? 0 : chatContainer.scrollHeight - window.innerHeight;
+	chat.style.marginTop = Settings.get('new-messages-on-top') ? '0px' : -(chatContainer.scrollHeight - window.innerHeight) + 'px';
 	document.getElementById('settings-smooth-scroll').parentNode.nextElementSibling.classList.toggle('hidden', !Settings.get('smooth-scroll'));
 });
 if (Settings.get('smooth-scroll')) {
@@ -170,7 +170,7 @@ document.body.addEventListener('keydown', (e) => {
 		document.getElementById('curtain').classList.toggle('hidden');
 	} else if ((e.key == 'S' || e.key == 's') && e.shiftKey && e.ctrlKey) {
 		document.getElementById('settings').classList.toggle('hidden');
-		document.getElementById('settings').scrollTop = 0;
+		document.getElementById('settings').style.marginTop = '0px';
 		document.getElementById('settings-wheel').classList.toggle('open');
 	} else if ((e.key == 'Escape')) {
 		document.getElementById('settings').classList.add('hidden');
@@ -190,7 +190,7 @@ function scrollUp(now) {
 		var currentStep = Settings.get('smooth-scroll-duration') / (now - lastFrame);
 		scrollDistance -= scrollReference / currentStep;
 		scrollDistance = Math.max(scrollDistance, 0);
-		chatContainer.scrollTop = Math.round(Settings.get('new-messages-on-top') ? scrollDistance : chatContainer.scrollHeight - window.innerHeight - scrollDistance);
+		chat.style.marginTop = Math.round(Settings.get('new-messages-on-top') ? -scrollDistance : -(chatContainer.scrollHeight - window.innerHeight - scrollDistance)) + 'px';
 	}
 	lastFrame = now;
 	window.requestAnimationFrame(scrollUp);
@@ -424,7 +424,7 @@ function addMessage(chatLine) {
 	// Calculate height for smooth scrolling
 	scrollReference = scrollDistance += chatLine.scrollHeight;
 	if (!Settings.get('new-messages-on-top') && !Settings.get('smooth-scroll')) {
-		chatContainer.scrollTop = chatContainer.scrollHeight - window.innerHeight;
+		chat.style.marginTop = -(chatContainer.scrollHeight - window.innerHeight) + 'px';
 	}
 
 	// Check whether we can remove some of the oldest messages
@@ -487,7 +487,6 @@ function formatLinks(text, originalText) {
 		if (Settings.get('inline-images')) {
 			var giphy = /^https?:\/\/giphy\.com\/gifs\/(.*-)?([a-zA-Z0-9]+)$/gm.exec(urlText);
 			if (giphy) {
-				console.log('giphy', url);
 				url = `https://media1.giphy.com/media/${giphy[2].split("-").pop()}/giphy.gif`;
 				path = `media/${giphy[2].split("-").pop()}/giphy.gif`;
 			}
