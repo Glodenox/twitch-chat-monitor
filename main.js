@@ -436,7 +436,7 @@ function addMessage(chatLine) {
 }
 
 function deleteMessage(message) {
-	if (!message) {
+	if (!message || message.classList.contains('deleted')) {
 		return;
 	}
 	message.parentNode.style.height = (message.parentNode.scrollHeight - 7) + 'px'; // 2 x 3px padding + 1px border = 7
