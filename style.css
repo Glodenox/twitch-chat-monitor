@@ -199,6 +199,7 @@ body {
   background-color: black;
   background-color: var(--background-color);
   opacity: 0.9;
+  z-index: 9999;
 }
 
 .reverse-order #settings {
