@@ -90,6 +90,8 @@ document.getElementById('settings-channel').form.addEventListener('submit', (e) 
 	var channel = document.getElementById('settings-channel').value;
 	if (channel != '') {
 		client.leave(ensureHash(Settings.get('channel')));
+		// Cross out each channel message before joining new one
+		document.querySelectorAll('#chat > div').forEach(function(e) {e.style.textDecoration='line-through'});
 		Settings.set('channel', channel);
 		client.join(ensureHash(channel));
 	}
