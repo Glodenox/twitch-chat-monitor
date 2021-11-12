@@ -202,7 +202,7 @@ window.requestAnimationFrame(scrollUp);
 /** Chat event handling **/
 function handleChat(channel, userstate, message, self) {
 	// If enabled, combine messages instead of adding a new message
-	var id = 'message-' + message.toLowerCase().replace(/[^a-z0-9:]/g, '');
+	var id = 'message-' + message.toLowerCase().replace(/[^\p{Letter}]/gu, '');
 	if (Settings.get('combine-messages') && document.getElementById(id)) {
 		var matchedMessage = document.getElementById(id);
 		if (!matchedMessage.counter) {
