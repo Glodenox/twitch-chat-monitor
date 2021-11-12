@@ -303,3 +303,15 @@ body {
   background-color: black;
   background-color: var(--background-color);
 }
+
+#curtain {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background-color: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
