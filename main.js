@@ -487,7 +487,6 @@ function formatLinks(text, originalText) {
 		if (Settings.get('inline-images')) {
 			var giphy = /^https?:\/\/giphy\.com\/gifs\/(.*-)?([a-zA-Z0-9]+)$/gm.exec(urlText);
 			if (giphy) {
-				console.log('giphy', url);
 				url = `https://media1.giphy.com/media/${giphy[2].split("-").pop()}/giphy.gif`;
 				path = `media/${giphy[2].split("-").pop()}/giphy.gif`;
 			}
