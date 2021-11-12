@@ -85,6 +85,7 @@ document.getElementById('settings-wheel').addEventListener('click', () => {
 });
 // Twitch
 document.getElementById('settings-channel').value = Settings.get('channel');
+document.getElementById('settings-channel').addEventListener('input', (e) => e.target.value = e.target.value.replaceAll('https://www.twitch.tv/', '').replaceAll('twitch.tv/', ''));
 document.getElementById('settings-channel').form.addEventListener('submit', (e) => {
 	var channel = document.getElementById('settings-channel').value;
 	if (channel != '') {
