@@ -104,6 +104,8 @@ document.getElementById('settings-channel').form.addEventListener('submit', (e) 
 	document.getElementById('settings-' + key).value = Settings.get(key);
 	document.getElementById('settings-' + key).addEventListener('change', (e) => Settings.set(key, e.target.value));
 });
+document.getElementById('settings-font-size').value = Settings.get('font-size').slice(0, -2); // remove pixel unit
+document.getElementById('settings-font-size').addEventListener('change', (e) => Settings.set('font-size', e.target.value + 'px'));
 document.body.classList.toggle('hide-cursor', Settings.get('hide-cursor'));
 document.getElementById('settings-hide-cursor').checked = Settings.get('hide-cursor');
 configureToggler('hide-cursor', () => document.body.classList.toggle('hide-cursor', Settings.get('hide-cursor')));
@@ -143,7 +145,7 @@ configureToggler('inline-images', () => document.getElementById('settings-inline
 if (Settings.get('inline-images')) {
 	document.getElementById('settings-inline-images').parentNode.nextElementSibling.classList.remove('hidden');
 }
-document.getElementById('settings-inline-images-height').value = Settings.get('inline-images-height').slice(0, -2); // remove vh identifier
+document.getElementById('settings-inline-images-height').value = Settings.get('inline-images-height').slice(0, -2); // remove vh unit
 document.getElementById('settings-inline-images-height').addEventListener('input', (e) => {
 	var height = parseInt(e.target.value);
 	if (!isNaN(height) && e.target.validity.valid) {

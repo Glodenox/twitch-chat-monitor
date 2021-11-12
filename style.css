@@ -5,6 +5,7 @@ body {
   color: #eee;
   color: var(--text-color);
   font-size: 32px;
+  font-size: var(--font-size);
   font-family: "Open Sans Condensed", sans-serif;
 }
 
@@ -37,6 +38,7 @@ body.hide-cursor {
 #chat > div {
   padding: 3px 1px 3px 6px;
   line-height: 35px;
+  line-height: calc(var(--font-size) + 3px);
   border-bottom: #444 solid 1px;
   border-bottom-color: var(--separator-color);
 }
