@@ -46,12 +46,13 @@ var highlightUsers = Settings.get('highlight-users').toLowerCase().split(',').fi
 	highlightKeyphrases = Settings.get('highlight-keyphrases').toLowerCase().split(',').filter((phrase) => phrase != '');
 
 /** Set up chat client **/
+var channelFromPath = (document.location.href.match(/channel=([A-Za-z0-9_]+)/) || [null])[1];
 var options = {
 	connection: {
 		secure: true,
 		reconnect: true
 	},
-	channels: [ ensureHash(Settings.get('channel')) ]
+	channels: [ ensureHash(channelFromPath || Settings.get('channel')) ]
 };
 var client = new tmi.client(options);
 client.addListener('message', handleChat);
