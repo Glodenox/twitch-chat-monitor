@@ -376,7 +376,7 @@ function configureToggler(key, callback) {
 	document.getElementById(`settings-${key}`).checked = Settings.get(key);
 	document.getElementById(`settings-${key}`).addEventListener('click', (e) => {
 		Settings.toggle(key);
-		if (callback) {
+		if (typeof callback == 'function') {
 			callback(e);
 		}
 	});
