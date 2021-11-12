@@ -8,6 +8,10 @@ body {
   font-family: "Open Sans Condensed", sans-serif;
 }
 
+body.hide-cursor {
+  cursor: none;
+}
+
 .hidden {
   display: none !important;
 }

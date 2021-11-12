@@ -7,7 +7,8 @@ var chat = document.getElementById('chat'),
 	bitLevels = [ 10000, 1000, 500, 100, 1 ],
 	frames = 0,
 	fpsInterval,
-	lastFrameReset;
+	lastFrameReset,
+	lastMoveTimeoutId = null;
 
 
 /** Store settings with a local cache. Storing these variables directly in localStorage would remove the variable's type information **/
@@ -102,6 +103,16 @@ document.getElementById('settings-channel').form.addEventListener('submit', (e) 
 ['background-color', 'odd-background-color', 'separator-color', 'text-color', 'user-color', 'moderator-color', 'notice-color', 'highlight-color'].forEach(key => {
 	document.getElementById('settings-' + key).value = Settings.get(key);
 	document.getElementById('settings-' + key).addEventListener('change', (e) => Settings.set(key, e.target.value));
+});
+document.body.classList.toggle('hide-cursor', Settings.get('hide-cursor'));
+document.getElementById('settings-hide-cursor').checked = Settings.get('hide-cursor');
+configureToggler('hide-cursor', () => document.body.classList.toggle('hide-cursor', Settings.get('hide-cursor')));
+document.addEventListener('mousemove', () => {
+	if (Settings.get('hide-cursor')) {
+		document.body.classList.remove('hide-cursor');
+		clearTimeout(lastMoveTimeoutId);
+		lastMoveTimeoutId = setTimeout(() => Settings.get('hide-cursor') && document.body.classList.add('hide-cursor'), 4000);
+	}
 });
 // Chat Behavior
 document.body.classList.toggle('reverse-order', !Settings.get('new-messages-on-top'));
