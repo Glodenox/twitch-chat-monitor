@@ -70,10 +70,17 @@ body.hide-cursor {
 }
 
 #chat .chat-user:after {
-  content: ': ';
   color: #eee;
   color: var(--text-color);
   font-weight: 300;
+}
+
+#chat .chat-user:not(.action):after {
+  content: ': ';
+}
+
+#chat .chat-user.action:after {
+  content: '  ';
 }
 
 #chat .chat-user {

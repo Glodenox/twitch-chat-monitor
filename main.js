@@ -406,6 +406,9 @@ function createChatLine(userstate, message) {
 	if (userstate.mod) {
 		chatName.classList.add('moderator');
 	}
+	if (userstate['message-type'] == 'action') {
+		chatName.classList.add('action');
+	}
 	chatName.textContent = userstate['display-name'] || userstate.username;
 	if (chatName.textContent.toLowerCase() == removeHash(Settings.get('channel')).toLowerCase()) {
 		chatLine.className = 'highlight channel';
