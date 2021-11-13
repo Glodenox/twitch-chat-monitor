@@ -486,7 +486,7 @@ function addMessage(chatLine) {
 	}
 
 	// Check whether we can remove some of the oldest messages
-	while (chat.childNodes.length > 2 && chat.scrollHeight - (window.innerHeight + scrollDistance) > chat.firstChild.scrollHeight + chat.childNodes[1].scrollHeight) {
+	while (chat.childNodes.length > 2 && chat.scrollHeight - (window.innerHeight + (Settings.get('smooth-scroll') ? scrollDistance : 0)) > chat.firstChild.scrollHeight + chat.childNodes[1].scrollHeight) {
 		// Always remove two elements at the same time to prevent switching the odd and even rows
 		chat.firstChild.remove();
 		chat.firstChild.remove();
