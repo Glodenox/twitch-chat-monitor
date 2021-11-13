@@ -10,6 +10,7 @@ A tool that monitors and displays Twitch chat channels in a bigger font, ideal f
 Note that all these features can be enabled or disabled.
 
 * Smooth scrolling of chat messages to improve readability of a fast-flowing chat
+* Message rate limiting and message overflow disposal
 * Fully customizable color palette
 * New messages can be set to appear at the top or the bottom of the screen
 * Show or hide moderator actions
