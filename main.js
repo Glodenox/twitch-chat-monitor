@@ -77,6 +77,14 @@ client.addListener('clearchat', (channel) => {
 	chat.textContent = '';
 	addNotice('Chat has been cleared by a moderator');
 });
+// Network connection monitoring
+client.addListener('disconnected', () => document.getElementById('network-status').classList.remove('hidden'));
+client.addListener('connected', () => {
+	if (!document.getElementById('network-status').classList.contains('hidden')) {
+		addNotice('Connection reestablished, resuming chat monitoring.');
+	}
+	document.getElementById('network-status').classList.add('hidden');
+});
 
 client.connect();
 

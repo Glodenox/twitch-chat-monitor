@@ -198,7 +198,7 @@ body.hide-cursor {
   bottom: 15px;
 }
 
-#chat-overload {
+.notifications {
   position: absolute;
   bottom: 10px;
   left: 0;
@@ -207,19 +207,20 @@ body.hide-cursor {
   justify-content: center;
 }
 
-#chat-overload div {
+.reverse-order .notifications {
+  bottom: auto;
+  top: 10px;
+}
+
+.notifications div {
   border: 2px solid #eee;
   border-color: var(--text-color);
   padding: 5px;
+  margin: 5px;
   border-radius: 10px;
   background-color: black;
   background-color: var(--background-color);
   opacity: 0.9;
-}
-
-.reverse-order #chat-overload {
-  bottom: auto;
-  top: 10px;
 }
 
 #settings {
