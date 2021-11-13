@@ -127,6 +127,7 @@ configureToggler('limit-message-rate', () => {
 	if (!Settings.get('limit-message-rate')) {
 		messageQueue.forEach((args) => processChat.apply(this, args));
 		messageQueue = [];
+		document.getElementById('chat-overload').classList.add('hidden');
 	}
 });
 if (Settings.get('limit-message-rate')) {
@@ -225,8 +226,16 @@ function scrollUp(now) {
 		frames++;
 	}
 	if (Settings.get('limit-message-rate')) {
-		// Cull the queue to a reasonable length
-		messageQueue.splice(40);
+		if (messageQueue.length > 40) {
+			document.getElementById('chat-overload').classList.remove('hidden');
+		}
+		if (messageQueue.length < 10) {
+			document.getElementById('chat-overload').classList.add('hidden');
+			document.getElementById('chat-overload-count').textContent = "0";
+		}
+		// Cull the queue to a reasonable length and update the counter
+		document.getElementById('chat-overload-count').textContent = parseInt(document.getElementById('chat-overload-count').textContent) + messageQueue.splice(40).length;
+		
 		if (messageQueue.length > 0 && now - lastMessageTimestamp > 1000 / Settings.get('message-rate')) {
 			processChat.apply(this, messageQueue.shift());
 			lastMessageTimestamp = now;
