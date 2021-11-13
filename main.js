@@ -8,7 +8,9 @@ var chat = document.getElementById('chat'),
 	frames = 0,
 	fpsInterval,
 	lastFrameReset,
-	lastMoveTimeoutId = null;
+	lastMoveTimeoutId = null,
+	messageQueue = [],
+	lastMessageTimestamp = 0;
 
 
 /** Store settings with a local cache. Storing these variables directly in localStorage would remove the variable's type information **/
@@ -117,6 +119,26 @@ document.addEventListener('mousemove', () => {
 	}
 });
 // Chat Behavior
+document.body.classList.toggle('limit-message-rate', !Settings.get('limit-message-rate'));
+document.getElementById('settings-limit-message-rate').checked = Settings.get('limit-message-rate');
+configureToggler('limit-message-rate', () => {
+	document.body.classList.toggle('limit-message-rate', !Settings.get('limit-message-rate'));
+	document.getElementById('settings-limit-message-rate').parentNode.nextElementSibling.classList.toggle('hidden', !Settings.get('limit-message-rate'));
+	if (!Settings.get('limit-message-rate')) {
+		messageQueue.forEach((args) => processChat.apply(this, args));
+		messageQueue = [];
+	}
+});
+if (Settings.get('limit-message-rate')) {
+	document.getElementById('settings-limit-message-rate').parentNode.nextElementSibling.classList.remove('hidden');
+}
+document.getElementById('settings-message-rate').value = Settings.get('message-rate');
+document.getElementById('settings-message-rate').addEventListener('input', (e) => {
+	var rate = parseInt(e.target.value);
+	if (!isNaN(rate) && e.target.validity.valid) {
+		Settings.set('message-rate', rate);
+	}
+});
 document.body.classList.toggle('reverse-order', !Settings.get('new-messages-on-top'));
 document.getElementById('settings-new-messages-on-top').checked = Settings.get('new-messages-on-top');
 configureToggler('new-messages-on-top', () => {
@@ -202,6 +224,14 @@ function scrollUp(now) {
 	if (Settings.get('show-fps')) {
 		frames++;
 	}
+	if (Settings.get('limit-message-rate')) {
+		// Cull the queue to a reasonable length
+		messageQueue.splice(40);
+		if (messageQueue.length > 0 && now - lastMessageTimestamp > 1000 / Settings.get('message-rate')) {
+			processChat.apply(this, messageQueue.shift());
+			lastMessageTimestamp = now;
+		}
+	}
 	if (Settings.get('smooth-scroll') && scrollDistance > 0) {
 		// Estimate how far along we are in scrolling in the current scroll reference
 		var currentStep = Settings.get('smooth-scroll-duration') / (now - lastFrame);
@@ -216,7 +246,15 @@ window.requestAnimationFrame(scrollUp);
 
 
 /** Chat event handling **/
-function handleChat(channel, userstate, message, self) {
+function handleChat(channel, userstate, message) {
+	if (Settings.get('limit-message-rate')) {
+		messageQueue.push([ channel, userstate, message ]);
+	} else {
+		processChat(channel, userstate, message);
+	}
+}
+
+function processChat(channel, userstate, message) {
 	// If enabled, combine messages instead of adding a new message
 	var id = 'message-' + message.toLowerCase().replace(/[^\p{Letter}]/gu, '');
 	if (Settings.get('combine-messages') && document.getElementById(id)) {

@@ -36,6 +36,10 @@
       </div>
       <div>
         <h3>Chat Behavior</h3>
+        <div>
+          <label><input type="checkbox" id="settings-limit-message-rate"/> Limit the rate at which messages appear</label>
+          <div class="subfield hidden"><label>Amount of messages per second: <input type="number" size="2" max="50" min="1" id="settings-message-rate"/></label></div>
+        </div>
         <div><label><input type="checkbox" id="settings-new-messages-on-top"/> New messages appear at the top</label></div>
         <div>
           <label><input type="checkbox" id="settings-smooth-scroll"/> Smooth scrolling</label>
@@ -100,6 +104,8 @@
 // These values are only the initial values and can get overwritten
 var defaultSettings = {
   'channel': 'desertbus',
+  'limit-message-rate': true,
+  'message-rate': 10,
   'new-messages-on-top': true,
   'smooth-scroll': true,
   'smooth-scroll-duration': 1000,  // Time in milliseconds allowed for a message to appear
