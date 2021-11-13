@@ -94,6 +94,23 @@ body.hide-cursor {
   color: var(--moderator-color);
 }
 
+#chat.align-messages .chat-user {
+  flex-basis: 270px;
+  flex-shrink: 0;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  text-align: right;
+  padding-right: 5px;
+}
+
+#chat.align-messages div {
+  display: flex;
+}
+
+#chat.align-messages div span {
+  display: block;
+}
+
 #chat > div.highlight, #chat > div.notice {
   padding-left: 12px;
   border-left: 6px solid;

@@ -126,6 +126,9 @@ document.addEventListener('mousemove', () => {
 		lastMoveTimeoutId = setTimeout(() => Settings.get('hide-cursor') && document.body.classList.add('hide-cursor'), 4000);
 	}
 });
+document.getElementById('chat').classList.toggle('align-messages', Settings.get('align-messages'));
+document.getElementById('settings-align-messages').checked = Settings.get('align-messages');
+configureToggler('align-messages', () => document.getElementById('chat').classList.toggle('align-messages', Settings.get('align-messages')));
 // Chat Behavior
 document.body.classList.toggle('limit-message-rate', !Settings.get('limit-message-rate'));
 document.getElementById('settings-limit-message-rate').checked = Settings.get('limit-message-rate');
