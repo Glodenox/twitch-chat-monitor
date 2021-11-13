@@ -543,7 +543,7 @@ function formatEmotes(text, emotes) {
 }
 
 function formatLinks(text, originalText) {
-	var urlRegex = /(https?:\/\/)?(www\.)?([0-9a-zA-Z-_\.]+\.[0-9a-zA-Z]+\/)([0-9a-zA-Z-_+:;|`^\(\)\[\]#=&\/\.\?\|\~]+)?/g;
+	var urlRegex = /(https?:\/\/)?(www\.)?([0-9a-zA-Z-_\.]+\.[0-9a-zA-Z]+\/)([0-9a-zA-Z-_+:;,|`^\(\)\[\]#=&\/\.\?\|\~]*[0-9a-zA-Z-_+:;|`^\(\)\[\]#=&\/\.\?\|\~])?/g;
 	var match;
 	while ((match = urlRegex.exec(originalText)) !== null) {
 		var urlText = url = match[0];
