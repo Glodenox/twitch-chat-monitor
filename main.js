@@ -315,7 +315,7 @@ function processChat(channel, userstate, message) {
 
 	// Load Twitter messages, if any
 	var tweets = Array.from(chatLine.querySelectorAll('div[data-tweet]'));
-	if (tweets.length > 0 && twttr && twttr.init) {
+	if (tweets.length > 0 && typeof twttr != 'undefined' && twttr.init) {
 		tweets.forEach((tweet) => {
 			twttr.widgets
 				.createTweet(tweet.dataset.tweet, tweet, {theme: 'dark', conversation: 'none', cards: 'hidden', dnt: 'true'})
