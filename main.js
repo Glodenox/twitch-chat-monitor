@@ -264,68 +264,72 @@ function handleChat(channel, userstate, message) {
 }
 
 function processChat(channel, userstate, message) {
-	// If enabled, combine messages instead of adding a new message
-	var id = 'message-' + message.toLowerCase().replace(/[^\p{Letter}]/gu, '');
-	if (Settings.get('combine-messages') && document.getElementById(id)) {
-		var matchedMessage = document.getElementById(id);
-		if (!matchedMessage.counter) {
-			var counterContainer = document.createElement('span'),
-				counter = document.createElement('span');
-			counterContainer.className = 'counter';
-			counterContainer.innerHTML = '&times; ';
-			counterContainer.appendChild(counter);
-			counter.textContent = '1';
-			matchedMessage.appendChild(counterContainer);
-			matchedMessage.counter = counter;
+	try {
+		// If enabled, combine messages instead of adding a new message
+		var id = 'message-' + message.toLowerCase().replace(/[^\p{Letter}]/gu, '');
+		if (Settings.get('combine-messages') && document.getElementById(id)) {
+			var matchedMessage = document.getElementById(id);
+			if (!matchedMessage.counter) {
+				var counterContainer = document.createElement('span'),
+					counter = document.createElement('span');
+				counterContainer.className = 'counter';
+				counterContainer.innerHTML = '&times; ';
+				counterContainer.appendChild(counter);
+				counter.textContent = '1';
+				matchedMessage.appendChild(counterContainer);
+				matchedMessage.counter = counter;
+			}
+			chat.appendChild(matchedMessage);
+			matchedMessage.querySelector('.counter').classList.add('bump');
+			matchedMessage.counter.textContent++;
+			setTimeout(() => matchedMessage.querySelector('.counter').classList.remove('bump'), 150);
+			return;
 		}
-		chat.appendChild(matchedMessage);
-		matchedMessage.querySelector('.counter').classList.add('bump');
-		matchedMessage.counter.textContent++;
-		setTimeout(() => matchedMessage.querySelector('.counter').classList.remove('bump'), 150);
-		return;
-	}
-	var chatLine = createChatLine(userstate, message);
-	if (Settings.get('combine-messages')) {
-		chatLine.id = id;
-	}
+		var chatLine = createChatLine(userstate, message);
+		if (Settings.get('combine-messages')) {
+			chatLine.id = id;
+		}
 
-	// Deal with loading user-provided inline images
-	var userImages = Array.from(chatLine.querySelectorAll('img.user-image'));
-	if (userImages.length > 0) {
-		userImages.filter((userImage) => !userImage.complete).forEach((userImage) => {
-			userImage.style.display = 'none';
-			userImage.addEventListener('load', () => {
-				if (userImage.dataset.mq && userImage.naturalWidth == 120) { // Failed to load, placeholder received
-					if (userImage.dataset.hq) {
-						userImage.src = userImage.dataset.hq;
-						userImage.dataset.hq = '';
-						return;
-					} else if (userImage.dataset.mq) {
-						userImage.src = userImage.dataset.mq;
-						userImage.dataset.mq = '';
-						return;
+		// Deal with loading user-provided inline images
+		var userImages = Array.from(chatLine.querySelectorAll('img.user-image'));
+		if (userImages.length > 0) {
+			userImages.filter((userImage) => !userImage.complete).forEach((userImage) => {
+				userImage.style.display = 'none';
+				userImage.addEventListener('load', () => {
+					if (userImage.dataset.mq && userImage.naturalWidth == 120) { // Failed to load, placeholder received
+						if (userImage.dataset.hq) {
+							userImage.src = userImage.dataset.hq;
+							userImage.dataset.hq = '';
+							return;
+						} else if (userImage.dataset.mq) {
+							userImage.src = userImage.dataset.mq;
+							userImage.dataset.mq = '';
+							return;
+						}
 					}
-				}
-				var oldChatLineHeight = chatLine.scrollHeight;
-				userImage.style.display = 'inline';
-				scrollReference = scrollDistance += Math.max(0, chatLine.scrollHeight - oldChatLineHeight);
+					var oldChatLineHeight = chatLine.scrollHeight;
+					userImage.style.display = 'inline';
+					scrollReference = scrollDistance += Math.max(0, chatLine.scrollHeight - oldChatLineHeight);
+				});
 			});
-		});
-	}
+		}
 
-	// Load Twitter messages, if any
-	var tweets = Array.from(chatLine.querySelectorAll('div[data-tweet]'));
-	if (tweets.length > 0 && typeof twttr != 'undefined' && twttr.init) {
-		tweets.forEach((tweet) => {
-			twttr.widgets
-				.createTweet(tweet.dataset.tweet, tweet, {theme: 'dark', conversation: 'none', cards: 'hidden', dnt: 'true'})
-				.then(el => {
-					scrollReference = scrollDistance += el.scrollHeight;
-				})
-				.catch(e => console.log(e));
-		});
+		// Load Twitter messages, if any
+		var tweets = Array.from(chatLine.querySelectorAll('div[data-tweet]'));
+		if (tweets.length > 0 && typeof twttr != 'undefined' && twttr.init) {
+			tweets.forEach((tweet) => {
+				twttr.widgets
+					.createTweet(tweet.dataset.tweet, tweet, {theme: 'dark', conversation: 'none', cards: 'hidden', dnt: 'true'})
+					.then(el => {
+						scrollReference = scrollDistance += el.scrollHeight;
+					})
+					.catch(e => console.log(e));
+			});
+		}
+		addMessage(chatLine);
+	} catch (error) {
+		console.err('Error parsing chat message: ' + message, error);
 	}
-	addMessage(chatLine);
 }
 
 function handleRoomstate(channel, state) {
@@ -355,7 +359,7 @@ function handleSubscription(username, message, userstate) {
 	subscriptionNotice.textContent = userstate['system-msg'].replaceAll('\\s', ' ');
 	chatLine.append(subscriptionNotice);
 
-	if (message) {
+	if (message && message.length > 0) {
 		chatLine.append(createChatLine(userstate, message));
 	}
 	addMessage(chatLine);
