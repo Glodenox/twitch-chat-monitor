@@ -577,20 +577,28 @@ function formatLinks(text, originalText) {
 				path = `${imgur[1]}.gif`;
 			}
 			if (match[1] && imageExtensions.some((extension) => path.endsWith(extension))) {
-				text.push(`<br /><img class="user-image" src="${url}" alt="" />`);
+				if (text.indexOf('<br />') == -1) {
+					text.push('<br />');
+				}
+				text.push(`<img class="user-image" src="${url}" alt="" />`);
 			}
 		}
 		if (Settings.get('unfurl-youtube') && (match[3] == 'youtube.com/' || match[3] == 'youtu.be/')) {
 			var youtube = /^https?:\/\/(www\.)?(youtu\.be\/|youtube\.com\/watch\?v=)([^&?]+).*$/gm.exec(url);
 			if (youtube) {
-				text.push(`<br /><img src="https://img.youtube.com/vi/${youtube[3]}/maxresdefault.jpg" class="user-image" alt="YouTube video preview" data-hq="https://img.youtube.com/vi/${youtube[3]}/hqdefault.jpg" data-mq="https://img.youtube.com/vi/${youtube[3]}/mqdefault.jpg" />`);
+				if (text.indexOf('<br />') == -1) {
+					text.push('<br />');
+				}
+				text.push(`<img src="https://img.youtube.com/vi/${youtube[3]}/maxresdefault.jpg" class="user-image" alt="YouTube video preview" data-hq="https://img.youtube.com/vi/${youtube[3]}/hqdefault.jpg" data-mq="https://img.youtube.com/vi/${youtube[3]}/mqdefault.jpg" />`);
 			}
 		}
-
 		if (Settings.get('unfurl-twitter') && match[3] == 'twitter.com/' && match[4] != undefined) {
 			var twitter = /^https?:\/\/(www\.)?twitter\.com.+\/([0-9]+)$/gm.exec(match[0]);
 			if (twitter) {
-				text.push(`<div data-tweet="${twitter[2]}"></div>`);
+				if (text.indexOf('<br />') == -1) {
+					text.push('<br />');
+				}
+				text.push(`<div data-tweet="${twitter[2]}" class="tweet-embed"></div>`);
 			}
 		}
 		if (Settings.get('shorten-urls')) {

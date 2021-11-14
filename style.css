@@ -65,8 +65,12 @@ body.hide-cursor {
 }
 
 #chat img.user-image {
-  vertical-align: bottom;
+  vertical-align: top;
   padding: 4px;
+}
+
+#chat div.tweet-embed {
+  display: inline-block;
 }
 
 #chat .chat-user:after {
