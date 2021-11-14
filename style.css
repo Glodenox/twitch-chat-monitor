@@ -71,6 +71,7 @@ body.hide-cursor {
 
 #chat div.tweet-embed {
   display: inline-block;
+  width: 550px;
 }
 
 #chat .chat-user:after {

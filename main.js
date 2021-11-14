@@ -325,11 +325,16 @@ function processChat(channel, userstate, message) {
 		}
 
 		// Load Twitter messages, if any
-		var tweets = Array.from(chatLine.querySelectorAll('div[data-tweet]'));
+		var tweets = Array.from(chatLine.querySelectorAll('div.tweet-embed'));
 		if (tweets.length > 0 && typeof twttr != 'undefined' && twttr.init) {
 			tweets.forEach((tweet) => {
 				twttr.widgets
-					.createTweet(tweet.dataset.tweet, tweet, {theme: 'dark', conversation: 'none', cards: 'hidden', dnt: 'true'})
+					.createTweet(tweet.dataset.tweet, tweet, {
+						theme: 'dark',
+						conversation: 'none',
+						cards: 'hidden',
+						dnt: 'true'
+					})
 					.then(el => {
 						scrollReference = scrollDistance += el.scrollHeight;
 					})
