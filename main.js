@@ -571,6 +571,11 @@ function formatLinks(text, originalText) {
 				url = `https://media1.giphy.com/media/${giphy[2].split("-").pop()}/giphy.gif`;
 				path = `media/${giphy[2].split("-").pop()}/giphy.gif`;
 			}
+			var imgur = /^https?:\/\/imgur\.com\/([a-zA-Z0-9]+)$/gm.exec(urlText);
+			if (imgur) {
+				url = `https://i.imgur.com/${imgur[1]}.gif`;
+				path = `${imgur[1]}.gif`;
+			}
 			if (match[1] && imageExtensions.some((extension) => path.endsWith(extension))) {
 				text.push(`<br /><img class="user-image" src="${url}" alt="" />`);
 			}
