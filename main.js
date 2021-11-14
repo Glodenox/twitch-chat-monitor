@@ -338,7 +338,7 @@ function processChat(channel, userstate, message) {
 		}
 		addMessage(chatLine);
 	} catch (error) {
-		console.err('Error parsing chat message: ' + message, error);
+		console.error('Error parsing chat message: ' + message, error);
 	}
 }
 
