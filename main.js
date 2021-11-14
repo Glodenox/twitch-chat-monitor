@@ -581,6 +581,11 @@ function formatLinks(text, originalText) {
 				url = `https://i.imgur.com/${imgur[1]}.gif`;
 				path = `${imgur[1]}.gif`;
 			}
+			var twimg = /^https?:\/\/pbs\.twimg\.com\/media\/([a-zA-Z0-9]+)\?format=([a-z]+).*$/gm.exec(urlText);
+			if (twimg) {
+				url = `https://pbs.twimg.com/media/${twimg[1]}.${twimg[2]}`;
+				path = `/media/${twimg[1]}.${twimg[2]}`;
+			}
 			if (match[1] && imageExtensions.some((extension) => path.endsWith(extension))) {
 				if (text.indexOf('<br />') == -1) {
 					text.push('<br />');
