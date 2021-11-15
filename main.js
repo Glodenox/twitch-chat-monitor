@@ -102,7 +102,7 @@ document.getElementById('settings-channel').form.addEventListener('submit', (e) 
 	var channel = document.getElementById('settings-channel').value;
 	if (channel != '') {
 		client.leave(ensureHash(Settings.get('channel')));
-		// Cross out each channel message before joining new one
+		// Fade out all previous channel messages before joining new one
 		document.querySelectorAll('#chat > div').forEach((msg) => msg.style.opacity = 0.5);
 		Settings.set('channel', channel);
 		client.join(ensureHash(channel));
@@ -126,6 +126,7 @@ document.addEventListener('mousemove', () => {
 		lastMoveTimeoutId = setTimeout(() => Settings.get('hide-cursor') && document.body.classList.add('hide-cursor'), 4000);
 	}
 });
+
 document.getElementById('chat').classList.toggle('align-messages', Settings.get('align-messages'));
 document.getElementById('settings-align-messages').checked = Settings.get('align-messages');
 configureToggler('align-messages', () => document.getElementById('chat').classList.toggle('align-messages', Settings.get('align-messages')));
@@ -309,7 +310,7 @@ function processChat(channel, userstate, message) {
 		var userImages = Array.from(chatLine.querySelectorAll('img.user-image'));
 		if (userImages.length > 0) {
 			userImages.filter((userImage) => !userImage.complete).forEach((userImage) => {
-				userImage.style.display = 'none';
+				userImage.classList.add('hidden');
 				userImage.addEventListener('load', () => {
 					if (userImage.dataset.mq && userImage.naturalWidth == 120) { // Failed to load, placeholder received
 						if (userImage.dataset.hq) {
@@ -323,7 +324,7 @@ function processChat(channel, userstate, message) {
 						}
 					}
 					var oldChatLineHeight = chatLine.scrollHeight;
-					userImage.style.display = 'inline';
+					userImage.classList.remove('hidden');
 					scrollReference = scrollDistance += Math.max(0, chatLine.scrollHeight - oldChatLineHeight);
 				});
 			});
