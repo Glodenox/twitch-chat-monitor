@@ -51,7 +51,7 @@ body.hide-cursor {
   font-style: italic;
 }
 
-#chat .timestamp {
+#chat:not(.hide-timestamps) .timestamp {
   margin-right: 5px;
 }
 
@@ -182,6 +182,10 @@ body.hide-cursor {
 #chat .counter.bump {
   transition: 0.1s;
   font-size: 150%;
+}
+
+#chat.hide-timestamps .timestamps {
+  display: none;
 }
 
 #settings-wheel {

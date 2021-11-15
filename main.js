@@ -199,7 +199,12 @@ if (Settings.get('unfurl-twitter')) {
 	document.body.appendChild(twitterScript);
 }
 document.getElementById('settings-timestamps').value = Settings.get('timestamps');
-document.getElementById('settings-timestamps').addEventListener('change', (e) => Settings.set('timestamps', e.target.value));
+document.getElementById('chat').classList.toggle('hide-timestamps', Settings.get('timestamps') == '');
+document.getElementById('settings-timestamps').addEventListener('change', (e) => {
+	Settings.set('timestamps', e.target.value);
+	document.getElementById('chat').classList.toggle('hide-timestamps', e.target.value == '');
+	Array.prototype.forEach.call(document.querySelectorAll('#chat .timestamp'), updateTimestamp);
+});
 document.getElementById('settings-highlight-users').value = Settings.get('highlight-users');
 document.getElementById('settings-highlight-users').addEventListener('input', (e) => {
 	Settings.set('highlight-users', e.target.value.toLowerCase());
@@ -457,17 +462,10 @@ function createChatLine(userstate, message) {
 		chatName = document.createElement('span'),
 		chatMessage = document.createElement('span');
 
-	if (Settings.get('timestamps') != '') {
-		var formats = {
-			'short24': (now) => now.toLocaleTimeString('en-GB').replace(/:\d\d$/, ''),
-			'long24': (now) => now.toLocaleTimeString('en-GB'),
-			'short12': (now) => now.toLocaleTimeString('en-US').replace(/:\d\d /, ' ').replace(/^(\d):/, '0$1:'),
-			'long12': (now) => now.toLocaleTimeString('en-US').replace(/^(\d):/, '0$1:')
-		};
 		chatTimestamp.className = 'timestamp';
-		chatTimestamp.textContent = formats[Settings.get('timestamps')](new Date());
+	chatTimestamp.dataset.timestamp = Date.now();
+	updateTimestamp(chatTimestamp);
 		chatLine.appendChild(chatTimestamp);
-	}
 	chatName.className = 'chat-user';
 	if (userstate.mod) {
 		chatName.classList.add('moderator');
@@ -629,6 +627,16 @@ function formatLinks(text, originalText) {
 	return text;
 }
 
+function updateTimestamp(field) {
+	var formats = {
+		'short24': (now) => (new Date(now)).toLocaleTimeString('en-GB').replace(/:\d\d$/, ''),
+		'long24': (now) => (new Date(now)).toLocaleTimeString('en-GB'),
+		'short12': (now) => (new Date(now)).toLocaleTimeString('en-US').replace(/:\d\d /, ' ').replace(/^(\d):/, '0$1:'),
+		'long12': (now) => (new Date(now)).toLocaleTimeString('en-US').replace(/^(\d):/, '0$1:'),
+		'': () => {}
+	};
+	field.textContent = formats[Settings.get('timestamps')](parseInt(field.dataset.timestamp));
+}
 function ensureHash(text) {
 	if (!text.startsWith('#')) {
 		return '#' + text;
