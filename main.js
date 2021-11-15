@@ -45,6 +45,25 @@ var Settings = function() {
 	}
 }();
 
+var HexCompressor = function() {
+	const characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ=#';
+	return {
+		color2string: (color) => {
+			var code = '';
+			var firstHalf = parseInt(color.substr(1, 3), 16);
+			code += characters.charAt(Math.floor(firstHalf / 64));
+			code += characters.charAt(firstHalf % 64);
+			var secondHalf = parseInt(color.substr(4, 3), 16);
+			code += characters.charAt(Math.floor(secondHalf / 64));
+			code += characters.charAt(secondHalf % 64);
+			return code;
+		},
+		string2color: (string) => '#' + 
+			("00" + (characters.indexOf(string.charAt(0)) * 64 + characters.indexOf(string.charAt(1))).toString(16)).slice(-3) +
+			("00" + (characters.indexOf(string.charAt(2)) * 64 + characters.indexOf(string.charAt(3))).toString(16)).slice(-3)
+	};
+}();
+
 var highlightUsers = Settings.get('highlight-users').toLowerCase().split(',').filter((user) => user != ''),
 	highlightKeyphrases = Settings.get('highlight-keyphrases').toLowerCase().split(',').filter((phrase) => phrase != '');
 
@@ -110,12 +129,79 @@ document.getElementById('settings-channel').form.addEventListener('submit', (e) 
 	e.preventDefault();
 });
 // Style
-['background-color', 'odd-background-color', 'separator-color', 'text-color', 'user-color', 'moderator-color', 'notice-color', 'highlight-color'].forEach(key => {
-	document.getElementById('settings-' + key).value = Settings.get(key);
-	document.getElementById('settings-' + key).addEventListener('change', (e) => Settings.set(key, e.target.value));
+[
+	{
+		'name': "default",
+		'background': "#000000",
+		'odd-background': "#111111",
+		'separator': "#444444",
+		'text': "#eeeeee",
+		'user': "#008000",
+		'moderator': "#8383f9",
+		'channel': "#0d86ff",
+		'notice': "#eeeeee",
+		'highlight': "#731180"
+	}, {
+		'name': "bright",
+		'background': "#eeeeee",
+		'odd-background': "#dddddd",
+		'separator': "#bbbbbb",
+		'text': "#111111",
+		'user': "#00b000",
+		'moderator': "#8383f9",
+		'channel': "#0d86ff",
+		'notice': "#111111",
+		'highlight': "#731180"
+	}, {
+		'name': 'LRR',
+		'background': "#202020",
+		'odd-background': "#111111",
+		'separator': "#7c7c7c",
+		'text': "#d2d2d2",
+		'user': "#5282ff",
+		'moderator': "#f15a24",
+		'channel': "#f15a24",
+		'notice': "#d2d2d2",
+		'highlight': "#e1480f"
+	}
+].forEach(createStylePreview);
+var colorFields = ['background', 'odd-background', 'separator', 'text', 'user', 'moderator', 'channel', 'notice', 'highlight'];
+var customStyleValues = {
+	'name': "custom"
+};
+colorFields.forEach(key => customStyleValues[key] = Settings.get(`${key}-color`));
+var customStylePreview = createStylePreview(customStyleValues, true);
+colorFields.forEach(key => {
+	document.getElementById(`settings-${key}-color`).value = Settings.get(`${key}-color`);
+	document.getElementById(`settings-${key}-color`).addEventListener('change', (e) => {
+		Settings.set(`${key}-color`, e.target.value);
+		customStylePreview.style.setProperty(`--style-${key}`, e.target.value);
+		if (['channel', 'notice', 'highlight'].indexOf(key) != -1) {
+			customStylePreview.style.setProperty(`--style-${key}-background`, e.target.value + '50');
+		}
+		updateImportExport();
+	});
 });
+updateImportExport();
+document.getElementById('settings-custom-style-exchange').addEventListener('input', (e) => {
+	if (!/^[0-9a-zA-Z+#]{36}$/.test(e.target.value)) {
+		e.target.setCustomValidity('Invalid code');
+		e.target.reportValidity();
+		return;
+	}
+	e.target.setCustomValidity('');
+	colorFields.forEach((key, index) => {
+		var newColor = HexCompressor.string2color(e.target.value.substr(index * 4, 4));
+		Settings.set(key + '-color', newColor);
+		document.getElementById('settings-' + key + '-color').value = newColor;
+	});
+});
+document.getElementById('settings-custom-style').classList.toggle('hidden', Settings.get('style-preset') != 'custom');
+document.getElementById('settings-custom-style-exchange').classList.toggle('hidden', Settings.get('style-preset') != 'custom');
+
 document.getElementById('settings-font-size').value = Settings.get('font-size').slice(0, -2); // remove pixel unit
 document.getElementById('settings-font-size').addEventListener('change', (e) => Settings.set('font-size', e.target.value + 'px'));
+
 document.body.classList.toggle('hide-cursor', Settings.get('hide-cursor'));
 document.getElementById('settings-hide-cursor').checked = Settings.get('hide-cursor');
 configureToggler('hide-cursor', () => document.body.classList.toggle('hide-cursor', Settings.get('hide-cursor')));
@@ -463,10 +549,10 @@ function createChatLine(userstate, message) {
 		chatName = document.createElement('span'),
 		chatMessage = document.createElement('span');
 
-		chatTimestamp.className = 'timestamp';
+	chatTimestamp.className = 'timestamp';
 	chatTimestamp.dataset.timestamp = Date.now();
 	updateTimestamp(chatTimestamp);
-		chatLine.appendChild(chatTimestamp);
+	chatLine.appendChild(chatTimestamp);
 	chatName.className = 'chat-user';
 	if (userstate.mod) {
 		chatName.classList.add('moderator');
@@ -628,6 +714,42 @@ function formatLinks(text, originalText) {
 	return text;
 }
 
+function createStylePreview(style) {
+	var styleContainer = document.createElement('div');
+	styleContainer.className = 'style-preview';
+	var stylePreview = document.getElementById('style-template').cloneNode(true);
+	stylePreview.removeAttribute('id');
+	stylePreview.classList.remove('hidden');
+	if (style.name == Settings.get('style-preset')) {
+		styleContainer.classList.add('active');
+		Object.keys(style).filter(key => key != 'name').forEach(key => {
+			document.body.style.setProperty(`--${key}-color`, (style.name == 'custom' ? Settings.get(`${key}-color`) : style[key]));
+			if (['channel', 'notice', 'highlight'].indexOf(key) != -1) {
+				document.body.style.setProperty(`--${key}-background-color`, (style.name == 'custom' ? Settings.get(`${key}-color`) : style[key]) + '50');
+			}
+		});
+	}
+	styleContainer.addEventListener('click', () => {
+		Array.prototype.forEach.call(document.querySelectorAll('#styles .style-preview'), preview => preview.classList.remove('active'));
+		styleContainer.classList.add('active');
+		Settings.set('style-preset', style.name);
+		document.getElementById('settings-custom-style').classList.toggle('hidden', style.name != 'custom');
+		document.getElementById('settings-custom-style-exchange').classList.toggle('hidden', style.name != 'custom');
+		Object.keys(style).filter(key => key != 'name').forEach(key => {
+			document.body.style.setProperty(`--${key}-color`, (style.name == 'custom' ? Settings.get(`${key}-color`) : style[key]));
+			if (['channel', 'notice', 'highlight'].indexOf(key) != -1) {
+				document.body.style.setProperty(`--${key}-background-color`, (style.name == 'custom' ? Settings.get(`${key}-color`) : style[key]) + '50');
+			}
+		});
+	});
+	Object.keys(style).forEach(key => stylePreview.style.setProperty(`--style-${key}`, style[key]));
+	['channel', 'notice', 'highlight'].forEach(key => stylePreview.style.setProperty(`--style-${key}-background`, style[key] + '50'));
+	styleContainer.textContent = style.name;
+	styleContainer.appendChild(stylePreview);
+	document.getElementById('styles').appendChild(styleContainer);
+	return stylePreview;
+}
+
 function updateTimestamp(field) {
 	var formats = {
 		'short24': (now) => (new Date(now)).toLocaleTimeString('en-GB').replace(/:\d\d$/, ''),
@@ -638,6 +760,13 @@ function updateTimestamp(field) {
 	};
 	field.textContent = formats[Settings.get('timestamps')](parseInt(field.dataset.timestamp));
 }
+
+function updateImportExport() {
+	var code = '';
+	colorFields.forEach(key => code += HexCompressor.color2string(Settings.get(key + '-color')));
+	document.getElementById('settings-custom-style-exchange').value = code;
+}
+
 function ensureHash(text) {
 	if (!text.startsWith('#')) {
 		return '#' + text;

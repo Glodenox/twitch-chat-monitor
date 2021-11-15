@@ -24,17 +24,19 @@
       </div>
       <div>
         <h3>Style</h3>
-        <div class="fields style">
+        <div class="fields centered" id="styles"></div>
+        <div class="fields centered hidden" id="settings-custom-style">
           <div>Background<br/><input type="color" id="settings-background-color"/></div>
-          <div>Odd rows<br/><input type="color" id="settings-odd-background-color"/></div>
+          <div>Odd rows background<br/><input type="color" id="settings-odd-background-color"/></div>
           <div>Separator<br/><input type="color" id="settings-separator-color"/></div>
-          <div>Text<br/><input type="color" id="settings-text-color"/></div>
-          <div>User<br/><input type="color" id="settings-user-color"/></div>
+          <div>Message text<br/><input type="color" id="settings-text-color"/></div>
+          <div>Username<br/><input type="color" id="settings-user-color"/></div>
           <div>Moderator<br/><input type="color" id="settings-moderator-color"/></div>
-          <div>Channel<br/><input type="color" id="settings-channel-color"/></div>
+          <div>Channel highlight<br/><input type="color" id="settings-channel-color"/></div>
           <div>Notice<br/><input type="color" id="settings-notice-color"/></div>
           <div>Highlight<br/><input type="color" id="settings-highlight-color"/></div>
         </div>
+        <div><label>Custom style import/export: <input size="36" type="text" id="settings-custom-style-exchange"/></label></div>
         <div><label><input type="checkbox" id="settings-hide-cursor"/> Hide cursor when it hasn't moved for 4 seconds</label></div>
         <div><label><input type="checkbox" id="settings-align-messages"/> Line up messages vertically</label></div>
         <div><label>Font size: <input type="number" size="3" max="200" min="4" id="settings-font-size"/> pixels</label></div>
@@ -91,7 +93,7 @@
       </div>
       <div>
         <h3>Hotkeys overview</h3>
-        <div class="fields">
+        <div class="fields centered">
           <div>Ctrl+Shift+H<br/>Hide/show chat</div>
           <div>Ctrl+Shift+S<br/>Open/close settings</div>
         </div>
@@ -100,6 +102,52 @@
 
     <div id="chat-container">
       <div id="chat"></div>
+    </div>
+
+    <div style="width: 240px; height: 152px; background-color: var(--style-background); border: 1px solid #fff" class="hidden" id="style-template">
+      <div style="height: 8px; padding: 4px">
+        <div style="width: 40px; background-color: var(--style-user); height: 8px; float: left; margin-right: 4px"></div>
+        <div style="width: 40px; background-color: var(--style-text); height: 8px; float: left"></div>
+      </div>
+      <div style="height: 1px; background-color: var(--style-separator)"></div>
+      <div style="background-color: var(--style-odd-background); height: 8px; padding: 4px">
+        <div style="width: 28px; background-color: var(--style-user); height: 8px; float: left; margin-right: 4px"></div>
+        <div style="width: 144px; background-color: var(--style-text); height: 8px; float: left"></div>
+      </div>
+      <div style="height: 1px; background-color: var(--style-separator)"></div>
+      <div style="height: 8px; padding: 4px">
+        <div style="width: 48px; background-color: var(--style-moderator); height: 8px; float: left; margin-right: 4px"></div>
+        <div style="width: 100px; background-color: var(--style-text); height: 8px; float: left"></div>
+      </div>
+      <div style="height: 1px; background-color: var(--style-separator)"></div>
+      <div style="background-color: var(--style-notice-background); height: 8px; padding: 4px; border-left: 4px solid var(--style-notice)">
+        <div style="width: 116px; background-color: var(--style-text); height: 8px; float: left"></div>
+      </div>
+      <div style="height: 1px; background-color: var(--style-separator)"></div>
+      <div style="height: 8px; padding: 4px">
+        <div style="width: 40px; background-color: var(--style-user); height: 8px; float: left; margin-right: 4px"></div>
+        <div style="width: 96px; background-color: var(--style-text); height: 8px; float: left"></div>
+      </div>
+      <div style="height: 1px; background-color: var(--style-separator)"></div>
+      <div style="background-color: var(--style-channel-background); height: 8px; padding: 4px; border-left: 4px solid var(--style-channel)">
+        <div style="width: 32px; background-color: var(--style-user); height: 8px; float: left; margin-right: 4px"></div>
+        <div style="width: 76px; background-color: var(--style-text); height: 8px; float: left"></div>
+      </div>
+      <div style="height: 1px; background-color: var(--style-separator)"></div>
+      <div style="height: 8px; padding: 4px">
+        <div style="width: 56px; background-color: var(--style-user); height: 8px; float: left; margin-right: 4px"></div>
+        <div style="width: 122px; background-color: var(--style-text); height: 8px; float: left"></div>
+      </div>
+      <div style="height: 1px; background-color: var(--style-separator)"></div>
+      <div style="background-color: var(--style-odd-background); height: 8px; padding: 4px">
+        <div style="width: 32px; background-color: var(--style-user); height: 8px; float: left; margin-right: 4px"></div>
+        <div style="width: 104px; background-color: var(--style-text); height: 8px; float: left"></div>
+      </div>
+      <div style="height: 1px; background-color: var(--style-separator)"></div>
+      <div style="height: 8px; padding: 4px; border-left: 4px solid var(--style-highlight); background-color: var(--style-highlight-background)">
+        <div style="width: 42px; background-color: var(--style-user); height: 8px; float: left; margin-right: 4px"></div>
+        <div style="width: 120px; background-color: var(--style-text); height: 8px; float: left"></div>
+      </div>
     </div>
 
     <!-- Obtained from https://gitcdn.xyz/repo/tmijs/cdn/master/latest/1.x/tmi.min.js, which comes from https://github.com/tmijs/tmi.js -->
@@ -121,6 +169,7 @@ var defaultSettings = {
   'unfurl-twitter': true,
   'unfurl-youtube': true,
   'timestamps': '',
+  'style-preset': 'default',
    // Make sure to enter full rgb definitions here as the color input fields don't accept other values
   'background-color': '#000000',
   'odd-background-color': '#111111',

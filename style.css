@@ -262,7 +262,6 @@ body.hide-cursor {
   border-color: var(--separator-color);
   background-color: black;
   background-color: var(--background-color);
-  opacity: 0.9;
   z-index: 9999;
 }
 
@@ -278,8 +277,7 @@ body.hide-cursor {
 
 #settings h3 {
   padding: 5px 20px;
-  background-color: #000;
-  border-color: var(--background-color);
+  background-color: var(--background-color);
   margin: 0;
 }
 
@@ -292,11 +290,33 @@ body.hide-cursor {
 #settings .fields {
   display: grid;
   grid-gap: 10px;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
 }
 
-#settings .fields.style > div {
+#settings .fields.centered > div {
   text-align: center;
+}
+
+#settings .fields .style-preview {
+  border: 2px solid var(--text-color);
+  border-radius: 10px;
+  padding: 10px;
+  background-color: var(--background-color);
+  cursor: pointer;
+  opacity: 0.8;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+#settings .fields .style-preview.active {
+  opacity: 1;
+  border-color: var(--highlight-color);
+  background-color: var(--highlight-background-color);
+}
+
+#settings .fields .style-preview:not(.active):hover {
+  opacity: 1;
 }
 
 #settings .subfield {
