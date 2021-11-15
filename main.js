@@ -183,7 +183,7 @@ colorFields.forEach(key => {
 	});
 });
 updateImportExport();
-document.getElementById('settings-custom-style-exchange').addEventListener('input', (e) => {
+document.getElementById('settings-custom-style-exchange-field').addEventListener('input', (e) => {
 	if (!/^[0-9a-zA-Z+#]{36}$/.test(e.target.value)) {
 		e.target.setCustomValidity('Invalid code');
 		e.target.reportValidity();
@@ -764,7 +764,7 @@ function updateTimestamp(field) {
 function updateImportExport() {
 	var code = '';
 	colorFields.forEach(key => code += HexCompressor.color2string(Settings.get(key + '-color')));
-	document.getElementById('settings-custom-style-exchange').value = code;
+	document.getElementById('settings-custom-style-exchange-field').value = code;
 }
 
 function ensureHash(text) {
