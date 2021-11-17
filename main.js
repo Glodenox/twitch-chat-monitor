@@ -223,8 +223,7 @@ configureToggler('limit-message-rate', () => {
 	document.body.classList.toggle('limit-message-rate', !Settings.get('limit-message-rate'));
 	document.getElementById('settings-limit-message-rate').parentNode.nextElementSibling.classList.toggle('hidden', !Settings.get('limit-message-rate'));
 	if (!Settings.get('limit-message-rate')) {
-		messageQueue.forEach((args) => processChat.apply(this, args));
-		messageQueue = [];
+		flushMessageQueue();
 		document.getElementById('chat-overload').classList.add('hidden');
 	}
 });
@@ -455,6 +454,10 @@ function processChat(channel, userstate, message) {
 			});
 		}
 		addMessage(chatLine);
+		// Check whether the message we just added was a message that was already deleted
+		if (userstate.deleted) {
+			deleteMessage(userstate.id);
+		}
 	} catch (error) {
 		console.error('Error parsing chat message: ' + message, error);
 	}
@@ -462,6 +465,7 @@ function processChat(channel, userstate, message) {
 
 function handleRoomstate(channel, state) {
 	if (roomstate.channel != channel) {
+		flushMessageQueue();
 		addNotice(`Joined ${channel}.`);
 		if (state.slow) {
 			addNotice(`Channel is in slow mode.`);
@@ -518,18 +522,18 @@ function handleCheer(channel, userstate, message) {
 }
 
 function handleMessageDeletion(channel, username, deletedMessage, userstate) {
-	deleteMessage(document.getElementById(userstate['target-msg-id']));
+	deleteMessage(userstate['target-msg-id']);
 }
 
 function handleModAction(action, username, duration, userstate) {
 	if (Settings.get('show-mod-actions')) {
 		if (action == 'timeout') {
-			addNotice(`${username} was given a time out of ${duration} second${duration == 1 ? '' : 's'}.`);
+			addNotice(`${username} was given a time-out of ${duration} second${duration == 1 ? '' : 's'}.`);
 		} else if (action == 'ban') {
 			addNotice(`${username} has been banned.`);
 		}
 	}
-	Array.from(document.querySelectorAll(`#chat span[data-user="${userstate["target-user-id"]}"]`)).forEach(deleteMessage);
+	Array.from(document.querySelectorAll(`#chat span[data-user="${userstate["target-user-id"]}"]`)).map(message => message.id).forEach(deleteMessage);
 }
 
 function handleFPS(enable) {
@@ -627,8 +631,15 @@ function addMessage(chatLine) {
 	}
 }
 
-function deleteMessage(message) {
-	if (!message || message.classList.contains('deleted')) {
+function deleteMessage(messageId) {
+	var message = document.getElementById(messageId);
+	if (message == null) {
+		var messageToDelete = messageQueue.find(entry => entry[1].id == messageId);
+		messageToDelete[2] = '<Message deleted>'; // Text will be replaced, but just intended to put it back on one line
+		messageToDelete[1].deleted = true;
+		return;
+	}
+	if (message.classList.contains('deleted')) { // Weird, but ok
 		return;
 	}
 	message.parentNode.style.height = (message.parentNode.scrollHeight - 7) + 'px'; // 2 x 3px padding + 1px border = 7
@@ -733,6 +744,11 @@ function formatLinks(text, originalText) {
 		replaceText(text, replacement, match.index, match.index + match[0].length - 1);
 	}
 	return text;
+}
+
+function flushMessageQueue() {
+	messageQueue.forEach((args) => processChat.apply(this, args));
+	messageQueue = [];
 }
 
 function createStylePreview(style) {
