@@ -240,7 +240,8 @@ body.hide-cursor {
   left: 0;
   right: 0;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
 }
 
 .reverse-order .notifications {
