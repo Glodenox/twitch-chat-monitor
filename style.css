@@ -69,6 +69,15 @@ body.hide-cursor {
   padding: 4px;
 }
 
+#chat img.user-image:not(.loaded) {
+  display: none;
+}
+
+#chat .image-loading {
+  font-style: italic;
+  font-size: 80%;
+}
+
 #chat div.tweet-embed {
   display: inline-block;
   width: 550px;

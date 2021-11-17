@@ -395,8 +395,11 @@ function processChat(channel, userstate, message) {
 		// Deal with loading user-provided inline images
 		var userImages = Array.from(chatLine.querySelectorAll('img.user-image'));
 		if (userImages.length > 0) {
-			userImages.filter((userImage) => !userImage.complete).forEach((userImage) => {
-				userImage.classList.add('hidden');
+			userImages.forEach((userImage) => {
+				if (userImage.complete) { // most likely it was already cached
+					userImage.classList.add('loaded');
+					return;
+				}
 				userImage.addEventListener('load', () => {
 					if (userImage.dataset.mq && userImage.naturalWidth == 120) { // Failed to load, placeholder received
 						if (userImage.dataset.hq) {
@@ -410,10 +413,28 @@ function processChat(channel, userstate, message) {
 						}
 					}
 					var oldChatLineHeight = chatLine.scrollHeight;
-					userImage.classList.remove('hidden');
+					userImage.classList.add('loaded');
+					var loadingText = chatLine.querySelector('.image-loading');
+					if (chatLine.querySelector('.user-image:not(.loaded)') == null && loadingText != null) {
+						loadingText.remove();
+					}
 					scrollReference = scrollDistance += Math.max(0, chatLine.scrollHeight - oldChatLineHeight);
 				});
+				userImage.addEventListener('error', () => {
+					var loadingText = chatLine.querySelector('.image-loading');
+					if (loadingText) {
+						loadingText.textContent = '[image loading failed]';
+					}
+				});
 			});
+			if (userImages.some(image => !image.complete)) {
+				var loadingText = document.createElement('span');
+				loadingText.className = 'image-loading';
+				loadingText.textContent = '[Loading image...]';
+				var firstBreakLine = chatLine.querySelector('br');
+				firstBreakLine.insertAdjacentText('beforebegin', ' ');
+				firstBreakLine.insertAdjacentElement('beforebegin', loadingText);
+			}
 		}
 
 		// Load Twitter messages, if any
