@@ -371,6 +371,7 @@ body.hide-cursor {
   border-color: var(--text-color);
   background-color: black;
   background-color: var(--background-color);
+  max-width: 95%;
 }
 
 #settings button {
