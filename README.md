@@ -11,7 +11,7 @@ Note that all these features can be enabled or disabled.
 
 * Smooth scrolling of chat messages to improve readability of a fast-flowing chat
 * Message rate limiting and message overflow disposal
-* Fully customizable color palette
+* Several pre-defined themes and a fully customizable custom theme
 * New messages can be set to appear at the top or the bottom of the screen
 * Show or hide moderator actions
 * Highlight messages based on the username or certain keyphrases
@@ -39,7 +39,7 @@ If you want to have some predefined settings set (like the channel), you can hos
 
 The project consists of 4 files:
 
-* *index.html*: the web page you want to open in a browser to see the chat
+* *index.html*: the web page you want to open in a browser to see the chat, contains the default settings
 * *main.js*: main JavaScript file
 * *tmi.js*: a copy of the [tmi.js JavaScript library for Twitch](https://github.com/tmijs/tmi.js)
 * *style.css*: CSS styles are stored here
