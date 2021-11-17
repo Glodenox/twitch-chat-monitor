@@ -156,7 +156,7 @@ document.getElementById('settings-channel').form.addEventListener('submit', (e) 
 		'name': 'LRR',
 		'background': "#202020",
 		'odd-background': "#111111",
-		'separator': "#7c7c7c",
+		'separator': "#464646",
 		'text': "#d2d2d2",
 		'user': "#5282ff",
 		'moderator': "#f15a24",
