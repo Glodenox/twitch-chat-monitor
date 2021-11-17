@@ -290,7 +290,7 @@ document.getElementById('chat').classList.toggle('hide-timestamps', Settings.get
 document.getElementById('settings-timestamps').addEventListener('change', (e) => {
 	Settings.set('timestamps', e.target.value);
 	document.getElementById('chat').classList.toggle('hide-timestamps', e.target.value == '');
-	Array.prototype.forEach.call(document.querySelectorAll('#chat .timestamp'), updateTimestamp);
+	Array.from(document.querySelectorAll('#chat .timestamp')).forEach(updateTimestamp);
 });
 document.getElementById('settings-highlight-users').value = Settings.get('highlight-users');
 document.getElementById('settings-highlight-users').addEventListener('input', (e) => {
@@ -730,7 +730,7 @@ function createStylePreview(style) {
 		});
 	}
 	styleContainer.addEventListener('click', () => {
-		Array.prototype.forEach.call(document.querySelectorAll('#styles .style-preview'), preview => preview.classList.remove('active'));
+		Array.from(document.querySelectorAll('#styles .style-preview')).forEach(preview => preview.classList.remove('active'));
 		styleContainer.classList.add('active');
 		Settings.set('style-preset', style.name);
 		document.getElementById('settings-custom-style').classList.toggle('hidden', style.name != 'custom');
