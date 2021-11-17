@@ -639,7 +639,7 @@ function formatEmotes(text, emotes) {
 			if (typeof range == 'string') {
 				range = range.split('-').map(index => parseInt(index));
 				var emote = text.slice(range[0], range[1] + 1).join('');
-				replaceText(text, `<img class="emoticon" src="https://static-cdn.jtvnw.net/emoticons/v2/${id}/default/dark/1.0" alt="${emote}" title="${emote}" />`, range[0], range[1]);
+				replaceText(text, `<img class="emoticon" src="https://static-cdn.jtvnw.net/emoticons/v2/${id}/default/dark/1.0" srcset="https://static-cdn.jtvnw.net/emoticons/v2/${id}/default/dark/1.0 1x,https://static-cdn.jtvnw.net/emoticons/v2/${id}/default/dark/2.0 2x,https://static-cdn.jtvnw.net/emoticons/v2/${id}/default/dark/3.0 4x" alt="${emote}" title="${emote}" />`, range[0], range[1]);
 			}
 		});
 	};
