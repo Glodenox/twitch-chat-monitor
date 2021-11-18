@@ -342,7 +342,7 @@ function scrollUp(now) {
 		if (messageQueue.length > 40) {
 			document.getElementById('chat-overload').classList.remove('hidden');
 			// Cull the queue to a reasonable length and update the counter
-			document.getElementById('chat-overload-count').textContent = parseInt(document.getElementById('chat-overload-count').textContent) + messageQueue.splice(40).length;
+			document.getElementById('chat-overload-count').textContent = parseInt(document.getElementById('chat-overload-count').textContent) + messageQueue.splice(-40).length;
 		}
 		if (messageQueue.length < 10 && !document.getElementById('chat-overload').classList.contains('hidden')) {
 			document.getElementById('chat-overload').classList.add('hidden');
