@@ -298,6 +298,10 @@ body.hide-cursor {
   padding: 10px;
 }
 
+#settings > div > div {
+  margin: 10px 0;
+}
+
 #settings .fields {
   display: grid;
   grid-gap: 10px;
@@ -366,6 +370,7 @@ body.hide-cursor {
 
 #settings input[type="number"], #settings input[type="text"], #settings input[type="submit"], #settings button {
   height: 32px;
+  height: var(--font-size);
   padding: 0 5px;
   border: 2px solid #eee;
   border-color: var(--text-color);
@@ -374,8 +379,17 @@ body.hide-cursor {
   max-width: 95%;
 }
 
-#settings button {
+#settings input[type="submit"], #settings button {
+  height: 38px;
+  height: calc(var(--font-size) + 4px);
+  padding: 0 15px;
+  border-radius: 8px;
   cursor: pointer;
+}
+
+#settings input[type="submit"]:hover, #settings input[type="submit"]:active, #settings button:hover, #settings button:active {
+  background-color: #111;
+  background-color: var(--odd-background-color);
 }
 
 #settings input[type="number"]:invalid, #settings input[type="text"]:invalid {

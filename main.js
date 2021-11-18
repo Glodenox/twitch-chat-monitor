@@ -119,7 +119,7 @@ document.getElementById('settings-channel').value = Settings.get('channel');
 document.getElementById('settings-channel').addEventListener('input', (e) => e.target.value = e.target.value.replaceAll('https://www.twitch.tv/', '').replaceAll('twitch.tv/', ''));
 document.getElementById('settings-channel').form.addEventListener('submit', (e) => {
 	var channel = document.getElementById('settings-channel').value;
-	if (channel != '') {
+	if (channel != '' && channel != Settings.get('channel')) {
 		client.leave(ensureHash(Settings.get('channel')));
 		// Fade out all previous channel messages before joining new one
 		document.querySelectorAll('#chat > div').forEach((msg) => msg.style.opacity = 0.5);
