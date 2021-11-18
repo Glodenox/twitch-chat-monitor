@@ -129,6 +129,17 @@ document.getElementById('settings-channel').form.addEventListener('submit', (e) 
 	e.preventDefault();
 });
 // Style
+if (document.fullscreenEnabled) {
+	document.getElementById('fullscreen').addEventListener('click', () => {
+		if (document.fullscreenElement) {
+			document.exitFullscreen()
+		} else {
+			document.documentElement.requestFullscreen();
+		}
+	});
+} else {
+	document.getElementById('fullscreen').classList.add('hidden');
+}
 [
 	{
 		'name': "default",

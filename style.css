@@ -198,15 +198,20 @@ body.hide-cursor {
   display: none;
 }
 
-#settings-wheel {
+.commands {
   position: absolute;
-  z-index: 10;
   right: 5px;
   bottom: 5px;
+  display: flex;
+}
+
+#fullscreen, #settings-wheel {
+  z-index: 10;
   opacity: 0.3;
+  margin-left: 25px;
   cursor: pointer;
 }
-#settings-wheel:hover, #settings-wheel.open {
+#fullscreen:hover, #settings-wheel:hover, #settings-wheel.open {
   opacity: 1;
 }
 
