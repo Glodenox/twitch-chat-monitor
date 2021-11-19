@@ -129,7 +129,7 @@ document.getElementById('settings-channel').form.addEventListener('submit', (e) 
 	e.preventDefault();
 });
 // Style
-if (document.fullscreenEnabled) {
+if (document.fullscreenEnabled && Settings.get('support-fullscreen')) {
 	document.getElementById('fullscreen').addEventListener('click', () => {
 		if (document.fullscreenElement) {
 			document.exitFullscreen()
