@@ -268,7 +268,7 @@ body.hide-cursor {
 #settings {
   position: absolute;
   right: 20px;
-  bottom: 32px;
+  bottom: var(--font-size);
   left: 20px;
   margin-bottom: 15px;
   padding: 20px;
