@@ -586,7 +586,7 @@ function createChatLine(userstate, message) {
 		chatMessage = document.createElement('span');
 
 	chatTimestamp.className = 'timestamp';
-	chatTimestamp.dataset.timestamp = Date.now();
+	chatTimestamp.dataset.timestamp = userstate['tmi-sent-ts'] || Date.now();
 	updateTimestamp(chatTimestamp);
 	chatLine.appendChild(chatTimestamp);
 	chatName.className = 'chat-user';
