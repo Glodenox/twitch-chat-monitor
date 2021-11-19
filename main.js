@@ -646,8 +646,10 @@ function deleteMessage(messageId) {
 	var message = document.getElementById(messageId);
 	if (message == null) {
 		var messageToDelete = messageQueue.find(entry => entry[1].id == messageId);
-		messageToDelete[2] = '<Message deleted>'; // Text will be replaced, but just intended to put it back on one line
-		messageToDelete[1].deleted = true;
+		if (messageToDelete) {
+			messageToDelete[2] = '<Message deleted>'; // Text will be replaced, but just intended to put it back on one line
+			messageToDelete[1].deleted = true;
+		}
 		return;
 	}
 	if (message.classList.contains('deleted')) { // Weird, but ok
