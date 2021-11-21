@@ -24,6 +24,12 @@
       <div>
         <h3>Twitch</h3>
         <div><form action="#"><label>Twitch channel: <input type="text" id="settings-channel" required="required" placeholder="Name only (e.g. desertbus)" size="26"/></label> <input type="submit" value="Join"/></form></div>
+        <div><label class="disabled" id="settings-twitch-messaging"><input type="checkbox" id="settings-twitch-messagefield" disabled="disabled"/> Support sending messages</label>
+          <div class="subfield">
+            <label>Username: <input type="text" id="settings-twitch-username" placeholder="your Twitch username" size="26"/></label><br/>
+            <label>Access token: <input type="password" id="settings-twitch-token" placeholder="Twitch access token" size="26"/></label> (retrieve <a href="https://twitchapps.com/tmi/" target="_blank">here</a>)
+          </div>
+        </div>
       </div>
       <div>
         <h3>Style</h3>
@@ -71,10 +77,11 @@
         <div><label>Show timestamps: 
           <select id="settings-timestamps">
             <option value="">None</option>
-            <option value="short24">23:59</option>
-            <option value="long24">23:59:00</option>
-            <option value="short12">11:59 PM</option>
-            <option value="long12">11:59:00 PM</option>
+            <option value="short">59:15 (minutes:seconds)</option>
+            <option value="short24">23:59 (hours:minutes)</option>
+            <option value="long24">23:59:15 (hours:minutes:seconds)</option>
+            <option value="short12">11:59 PM (hours:minutes AM/PM)</option>
+            <option value="long12">11:59:15 PM (hours:minutes:seconds AM/PM)</option>
           </select></label>
         </div>
         <div><label>Highlight messages from <input type="text" placeholder="usernames separated by commas" id="settings-highlight-users" size="35"/></label></div>
@@ -103,10 +110,14 @@
         </div>
       </div>
     </div>
-
     <div id="chat-container">
       <div id="chat"></div>
     </div>
+    <form action="#" id="message-entry">
+      <span id="message-username"></span>
+      <input type="text" class="message-field" placeholder="enter message" />
+      <input type="submit" value="Send"/>
+    </form>
 
     <div style="width: 240px; height: 152px; background-color: var(--style-background); border: 1px solid #fff" class="hidden" id="style-template">
       <div style="height: 8px; padding: 4px">
@@ -154,7 +165,7 @@
       </div>
     </div>
 
-    <!-- Obtained from https://gitcdn.xyz/repo/tmijs/cdn/master/latest/1.x/tmi.min.js, which comes from https://github.com/tmijs/tmi.js -->
+    <!-- Obtained from https://github.com/tmijs/tmi.js -->
     <script src="tmi.min.js"></script>
     <script>
 // These values are only the initial values and can get overwritten
@@ -174,6 +185,7 @@ var defaultSettings = {
   'unfurl-youtube': true,
   'timestamps': '',
   'style-preset': 'default',
+  'twitch-messagefield': false,
    // Make sure to enter full rgb definitions here as the color input fields don't accept other values
   'background-color': '#000000',
   'odd-background-color': '#111111',

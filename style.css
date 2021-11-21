@@ -29,7 +29,7 @@ body.hide-cursor {
   margin-bottom: 100vh;
 }
 
-.reverse-order #chat {
+body.reverse-order #chat {
   flex-direction: column;
   margin-top: 100vh;
   margin-bottom: 0;
@@ -151,7 +151,7 @@ body.hide-cursor {
   background-color: var(--channel-background-color);
 }
 
-#chat a {
+#chat a, #settings a {
   color: inherit;
 }
 
@@ -205,6 +205,11 @@ body.hide-cursor {
   display: flex;
 }
 
+body.reverse-order .commands {
+  bottom: auto;
+  top: 5px;
+}
+
 #fullscreen, #settings-wheel {
   z-index: 10;
   opacity: 0.3;
@@ -215,7 +220,7 @@ body.hide-cursor {
   opacity: 1;
 }
 
-.reverse-order #settings-wheel {
+body.reverse-order #settings-wheel {
   top: 5px;
   bottom: auto;
 }
@@ -234,9 +239,17 @@ body.hide-cursor {
   opacity: 0.9;
 }
 
-.reverse-order #fps {
+body.show-message-entry #fps {
+  top: calc(15px + var(--font-size));
+}
+
+body.reverse-order #fps {
   top: auto;
   bottom: 15px;
+}
+
+body.show-message-entry.reverse-order #fps {
+  bottom: calc(15px + var(--font-size));
 }
 
 .notifications {
@@ -249,7 +262,7 @@ body.hide-cursor {
   align-items: center;
 }
 
-.reverse-order .notifications {
+body.reverse-order .notifications {
   bottom: auto;
   top: 10px;
 }
@@ -281,7 +294,7 @@ body.hide-cursor {
   z-index: 9999;
 }
 
-.reverse-order #settings {
+body.reverse-order #settings {
   top: 60px;
   bottom: auto;
 }
@@ -347,7 +360,12 @@ body.hide-cursor {
   padding-left: 10px;
 }
 
-#settings input, #settings button {
+#settings label.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+#settings input, #settings button, #message-entry input {
   font-size: 0.625em;
   vertical-align: bottom;
   color: inherit;
@@ -373,7 +391,7 @@ body.hide-cursor {
   font-weight: 700;
 }
 
-#settings input[type="number"], #settings input[type="text"], #settings input[type="submit"], #settings button {
+#settings input[type="number"], #settings input[type="text"], #settings input[type="password"], #settings input[type="submit"], #settings button, #message-entry input {
   height: 32px;
   height: var(--font-size);
   padding: 0 5px;
@@ -384,7 +402,7 @@ body.hide-cursor {
   max-width: 95%;
 }
 
-#settings input[type="submit"], #settings button {
+#settings input[type="submit"], #settings button, #message-entry input[type="submit"] {
   height: 38px;
   height: calc(var(--font-size) + 4px);
   padding: 0 15px;
@@ -392,12 +410,12 @@ body.hide-cursor {
   cursor: pointer;
 }
 
-#settings input[type="submit"]:hover, #settings input[type="submit"]:active, #settings button:hover, #settings button:active {
+#settings input[type="submit"]:hover, #settings input[type="submit"]:active, #settings button:hover, #settings button:active, #message-entry input[type="submit"]:hover, #message-entry input[type="submit"]:active {
   background-color: #111;
   background-color: var(--odd-background-color);
 }
 
-#settings input[type="number"]:invalid, #settings input[type="text"]:invalid {
+#settings input[type="number"]:invalid, #settings input[type="text"]:invalid, #settings input[type="password"]:invalid {
   border-color: red;
 }
 
@@ -430,4 +448,56 @@ body.hide-cursor {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+body.show-message-entry:not(.reverse-order) .commands {
+  bottom: calc(9px + var(--font-size));
+}
+
+body.show-message-entry.reverse-order .commands {
+  top: calc(9px + var(--font-size));
+}
+
+body.show-message-entry .notifications {
+  bottom: calc(14px + var(--font-size));
+}
+
+body.show-message-entry:not(.reverse-order) #settings {
+  bottom: calc(var(--font-size) * 2);
+}
+
+body.show-message-entry.reverse-order #settings {
+  top: calc(60px + var(--font-size));
+}
+
+body:not(.show-message-entry) #message-entry {
+  display: none;
+}
+
+#message-entry {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  display: flex;
+  height: calc(4px + var(--font-size));
+  background-color: black;
+  background-color: var(--background-color);
+}
+
+body.reverse-order #message-entry {
+  bottom: auto;
+  top: 0;
+}
+
+#message-entry span {
+  font-size: 0.8em;
+}
+
+#message-entry input[type="text"] {
+  flex-grow: 1;
+  margin: 0 5px;
+}
+
+#message-username:after {
+  content: ': ';
 }

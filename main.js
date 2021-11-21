@@ -70,12 +70,13 @@ var highlightUsers = Settings.get('highlight-users').toLowerCase().split(',').fi
 /** Set up chat client **/
 var channelFromPath = (document.location.href.match(/channel=([A-Za-z0-9_]+)/) || [null])[1];
 var options = {
-	connection: {
-		secure: true,
-		reconnect: true
-	},
+	skipMembership: true,
+	updateEmotesetsTimer: 30*60*1000, // once per half an hour should be sufficient
 	channels: [ ensureHash(channelFromPath || Settings.get('channel')) ]
 };
+if (Settings.get('identity')) {
+	options.identity = Settings.get('identity');
+}
 var client = new tmi.client(options);
 client.addListener('message', handleChat);
 client.addListener('roomstate', handleRoomstate);
@@ -83,7 +84,7 @@ client.addListener('subscription', (channel, username, method, message, userstat
 client.addListener('resub', (channel, username, months, message, userstate, methods) => handleSubscription(username, message, userstate));
 client.addListener('submysterygift', (channel, username, numbOfSubs, methods, userstate) => handleSubscription(username, null, userstate));
 client.addListener('cheer', handleCheer);
-client.addListener('raided', (channel, username, viewers) => addNotice(`${username} raided the channel with ${viewers} viewers!`));
+client.addListener('raided', (channel, username, viewers, tags) => addNotice(`${username} raided the channel with ${viewers} viewers!`));
 client.addListener('slowmode', (channel, enabled, length) => addNotice(`Slowmode chat has been ${enabled ? 'activated' : 'deactivated'}.`));
 client.addListener('followersonly', (channel, enabled, length) => addNotice(`Followers-only chat has been ${enabled ? 'activated' : 'deactivated'}.`));
 client.addListener('emoteonly', (channel, enabled) => addNotice(`Emote-only chat has been ${enabled ? 'activated' : 'deactivated'}.`));
@@ -104,11 +105,28 @@ client.addListener('connected', () => {
 	}
 	document.getElementById('network-status').classList.add('hidden');
 });
-
 client.connect();
 
-
 /** Interface interactions **/
+// Message sending
+document.getElementById('message-entry').addEventListener('submit', (e) => {
+	if (document.querySelector('#message-entry .message-field').value.trim().length > 0) {
+		document.querySelector('#message-entry .message-field').disabled = true;
+		client.say(Settings.get('channel'), document.querySelector('#message-entry .message-field').value.trim()).then(() => {
+			document.querySelector('#message-entry .message-field').value = '';
+			document.querySelector('#message-entry .message-field').disabled = false;
+			document.querySelector('#message-entry .message-field').focus();
+		}).catch(() => {
+			document.querySelector('#message-entry .message-field').disabled = false;
+			document.querySelector('#message-entry .message-field').focus();
+		});
+	}
+	e.preventDefault();
+});
+if (document.body.classList.contains('show-message-entry')) {
+	document.querySelector('#message-entry .message-field').focus();
+}
+// Settings
 document.getElementById('settings-wheel').addEventListener('click', () => {
 	document.getElementById('settings').classList.toggle('hidden');
 	document.getElementById('settings').scrollTop = 0;
@@ -127,6 +145,60 @@ document.getElementById('settings-channel').form.addEventListener('submit', (e) 
 		client.join(ensureHash(channel));
 	}
 	e.preventDefault();
+});
+if (Settings.get('identity')) {
+	document.getElementById('settings-twitch-username').value = Settings.get('identity').username;
+	document.getElementById('settings-twitch-token').value = Settings.get('identity').token;
+	document.getElementById('settings-twitch-messaging').classList.remove('disabled');
+	document.getElementById('settings-twitch-messagefield').classList.remove('disabled');
+	document.getElementById('settings-twitch-messagefield').disabled = false;
+	document.getElementById('message-username').textContent = Settings.get('identity').username;
+	document.body.classList.toggle('show-message-entry', Settings.get('twitch-messagefield'));
+}
+configureToggler('twitch-messagefield', () => {
+	document.getElementById('message-username').textContent = Settings.get('identity').username;
+	document.body.classList.toggle('show-message-entry', Settings.get('twitch-messagefield'));
+});
+document.getElementById('settings-twitch-username').addEventListener('input', (e) => {
+	if (e.target.value.length > 0 && document.getElementById('settings-twitch-token').value.length > 0 && document.getElementById('settings-twitch-token').validity.valid) {
+		Settings.set('identity', {
+			'username': document.getElementById('settings-twitch-username').value,
+			'password': document.getElementById('settings-twitch-token').value
+		});
+		document.getElementById('settings-twitch-messaging').classList.remove('disabled');
+		document.getElementById('settings-twitch-messagefield').disabled = false;
+		// TODO: restart WS connection
+	} else {
+		document.getElementById('settings-twitch-messaging').classList.add('disabled');
+		document.getElementById('settings-twitch-messagefield').disabled = false;
+		document.getElementById('settings-twitch-messagefield').checked = false;
+		document.body.classList.remove('show-message-entry');
+		Settings.set('twitch-messagefield', false);
+		Settings.set('identity', null);
+	}
+});
+document.getElementById('settings-twitch-token').addEventListener('input', (e) => {
+	if (!/^oauth:[0-9a-z]{30}$/.test(e.target.value)) {
+		e.target.setCustomValidity('Invalid token');
+		e.target.reportValidity();
+		document.getElementById('settings-twitch-messaging').classList.add('disabled');
+		document.getElementById('settings-twitch-messagefield').disabled = true;
+		document.getElementById('settings-twitch-messagefield').checked = false;
+		document.body.classList.remove('show-message-entry');
+		Settings.set('twitch-messagefield', false);
+		Settings.set('identity', null);
+		return;
+	}
+	e.target.setCustomValidity('');
+	if (document.getElementById('settings-twitch-username').value.length > 0) {
+		Settings.set('identity', {
+			'username': document.getElementById('settings-twitch-username').value,
+			'password': document.getElementById('settings-twitch-token').value
+		});
+		document.getElementById('settings-twitch-messaging').classList.remove('disabled');
+		document.getElementById('settings-twitch-messagefield').disabled = false;
+		// TODO: restart WS connection
+	}
 });
 // Style
 if (document.fullscreenEnabled && Settings.get('support-fullscreen')) {
@@ -806,6 +878,7 @@ function updateTimestamp(field) {
 		'long24': (now) => (new Date(now)).toLocaleTimeString('en-GB'),
 		'short12': (now) => (new Date(now)).toLocaleTimeString('en-US').replace(/:\d\d /, ' ').replace(/^(\d):/, '0$1:'),
 		'long12': (now) => (new Date(now)).toLocaleTimeString('en-US').replace(/^(\d):/, '0$1:'),
+		'short': (now) => (new Date(now)).toLocaleTimeString('en-GB').replace(/^\d\d:/, ''),
 		'': () => {}
 	};
 	field.textContent = formats[Settings.get('timestamps')](parseInt(field.dataset.timestamp));
@@ -839,9 +912,10 @@ function replaceText(text, replacement, from, to) {
 }
 
 function htmlEntities(html) {
+	const entityRegex = /[\u00A0-\u9999<>\&]/gim;
 	return html.map((character) => {
 		if (character.length == 1) {
-			return character.replace(/[\u00A0-\u9999<>\&]/gim, (match) => '&#' + match.charCodeAt(0) + ';');
+			return character.replace(entityRegex, (match) => '&#' + match.charCodeAt(0) + ';');
 		}
 		return character;
 	});
