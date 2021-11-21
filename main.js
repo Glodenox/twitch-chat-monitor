@@ -156,8 +156,14 @@ if (Settings.get('identity')) {
 	document.body.classList.toggle('show-message-entry', Settings.get('twitch-messagefield'));
 }
 configureToggler('twitch-messagefield', () => {
-	document.getElementById('message-username').textContent = Settings.get('identity').username;
 	document.body.classList.toggle('show-message-entry', Settings.get('twitch-messagefield'));
+	if (Settings.get('twitch-messagefield') && client.username.toLowerCase() != Settings.get('identity').username.toLowerCase()) {
+			document.getElementById('message-username').textContent = Settings.get('identity').username;
+			client.disconnect();
+			client.opts.identity = Settings.get('identity');
+			client.opts.username = Settings.get('identity').username;
+			client.connect();
+	}
 });
 document.getElementById('settings-twitch-username').addEventListener('input', (e) => {
 	if (e.target.value.length > 0 && document.getElementById('settings-twitch-token').value.length > 0 && document.getElementById('settings-twitch-token').validity.valid) {
@@ -167,7 +173,6 @@ document.getElementById('settings-twitch-username').addEventListener('input', (e
 		});
 		document.getElementById('settings-twitch-messaging').classList.remove('disabled');
 		document.getElementById('settings-twitch-messagefield').disabled = false;
-		// TODO: restart WS connection
 	} else {
 		document.getElementById('settings-twitch-messaging').classList.add('disabled');
 		document.getElementById('settings-twitch-messagefield').disabled = false;
@@ -175,6 +180,13 @@ document.getElementById('settings-twitch-username').addEventListener('input', (e
 		document.body.classList.remove('show-message-entry');
 		Settings.set('twitch-messagefield', false);
 		Settings.set('identity', null);
+		if (!client.username.startsWith('justinfan')) { // already logged out
+			document.getElementById('message-username').textContent = '';
+			client.disconnect();
+			client.opts.identity = {};
+			delete client.opts.username;
+			client.connect();
+		}
 	}
 });
 document.getElementById('settings-twitch-token').addEventListener('input', (e) => {
@@ -187,6 +199,13 @@ document.getElementById('settings-twitch-token').addEventListener('input', (e) =
 		document.body.classList.remove('show-message-entry');
 		Settings.set('twitch-messagefield', false);
 		Settings.set('identity', null);
+		if (!client.username.startsWith('justinfan')) { // already logged out
+			document.getElementById('message-username').textContent = '';
+			client.disconnect();
+			client.opts.identity = {};
+			delete client.opts.username;
+			client.connect();
+		}
 		return;
 	}
 	e.target.setCustomValidity('');
@@ -197,7 +216,6 @@ document.getElementById('settings-twitch-token').addEventListener('input', (e) =
 		});
 		document.getElementById('settings-twitch-messaging').classList.remove('disabled');
 		document.getElementById('settings-twitch-messagefield').disabled = false;
-		// TODO: restart WS connection
 	}
 });
 // Style
