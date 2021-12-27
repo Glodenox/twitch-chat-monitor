@@ -411,13 +411,16 @@ if (Settings.get('show-fps')) {
 document.body.addEventListener('keydown', (e) => {
 	if ((e.key == 'H' || e.key == 'h') && e.shiftKey && e.ctrlKey) {
 		document.getElementById('curtain').classList.toggle('hidden');
+		e.preventDefault();
 	} else if ((e.key == 'S' || e.key == 's') && e.shiftKey && e.ctrlKey) {
 		document.getElementById('settings').classList.toggle('hidden');
 		document.getElementById('settings').scrollTop = 0;
 		document.getElementById('settings-wheel').classList.toggle('open');
+		e.preventDefault();
 	} else if ((e.key == 'Escape')) {
 		document.getElementById('settings').classList.add('hidden');
 		document.getElementById('settings-wheel').classList.remove('open');
+		e.preventDefault();
 	}
 });
 
