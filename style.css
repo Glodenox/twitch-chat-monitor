@@ -198,14 +198,14 @@ body.reverse-order #chat {
   display: none;
 }
 
-.commands {
+#commands {
   position: absolute;
   right: 5px;
   bottom: 5px;
   display: flex;
 }
 
-body.reverse-order .commands {
+body.reverse-order #commands {
   bottom: auto;
   top: 5px;
 }
@@ -450,11 +450,11 @@ body.reverse-order #settings {
   justify-content: center;
 }
 
-body.show-message-entry:not(.reverse-order) .commands {
+body.show-message-entry:not(.reverse-order) #commands {
   bottom: calc(9px + var(--font-size));
 }
 
-body.show-message-entry.reverse-order .commands {
+body.show-message-entry.reverse-order #commands {
   top: calc(9px + var(--font-size));
 }
 

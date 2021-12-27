@@ -219,6 +219,9 @@ document.getElementById('settings-twitch-token').addEventListener('input', (e) =
 	}
 });
 // Style
+if (Settings.get('show-command-buttons')) {
+	document.getElementById('commands').classList.remove('hidden');
+}
 if (document.fullscreenEnabled && Settings.get('support-fullscreen')) {
 	document.getElementById('fullscreen').addEventListener('click', () => {
 		if (document.fullscreenElement) {
@@ -409,6 +412,9 @@ if (Settings.get('show-fps')) {
 
 // Hotkeys
 document.body.addEventListener('keydown', (e) => {
+	if (!Settings.get('support-hotkeys')) {
+		return;
+	}
 	if ((e.key == 'H' || e.key == 'h') && e.shiftKey && e.ctrlKey) {
 		document.getElementById('curtain').classList.toggle('hidden');
 		e.preventDefault();
