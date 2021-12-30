@@ -501,3 +501,38 @@ body.reverse-order #message-entry {
 #message-username:after {
   content: ': ';
 }
+
+.help:before {
+  content: '?';
+  border-radius: 50%;
+  background-color: #eee;
+  background-color: var(--text-color);
+  color: black;
+  color: var(--background-color);
+  font-weight: bold;
+  padding: 0 0.5em;
+  font-size: 0.5em;
+  cursor: pointer;
+  vertical-align: super;
+}
+.help:after {
+  content: attr(data-title);
+  display: none;
+  border: 1px solid #eee;
+  border-color: var(--text-color);
+  margin: 15px;
+  color: #eee;
+  color: var(--text-color);
+  background-color: black;
+  background-color: var(--background-color);
+  padding: 4px;
+}
+.help.visible:after {
+  display: block;
+}
+
+.help:hover:after {
+  opacity: 1;
+  transition: all 0.1s ease 0.3s;
+  visibility: visible;
+}

@@ -25,6 +25,7 @@
         <h3>Twitch</h3>
         <div><form action="#"><label>Twitch channel: <input type="text" id="settings-channel" required="required" placeholder="Name only (e.g. desertbus)" size="26"/></label> <input type="submit" value="Join"/></form></div>
         <div><label class="disabled" id="settings-twitch-messaging"><input type="checkbox" id="settings-twitch-messagefield" disabled="disabled"/> Support sending messages</label>
+          <span class="help" title="More information" data-title="Show a text box that allows sending messages from the monitor. Requires the addition of an access token to work."></span>
           <div class="subfield">
             <label>Username: <input type="text" id="settings-twitch-username" placeholder="your Twitch username" size="26"/></label><br/>
             <label>Access token: <input type="password" id="settings-twitch-token" placeholder="Twitch access token" size="26"/></label> (retrieve <a href="https://twitchapps.com/tmi/" target="_blank">here</a>)
@@ -54,21 +55,34 @@
         <h3>Chat Behavior</h3>
         <div>
           <label><input type="checkbox" id="settings-limit-message-rate"/> Limit the rate at which messages appear</label>
-          <div class="subfield hidden"><label>Amount of messages per second: <input type="number" size="2" max="50" min="1" id="settings-message-rate"/></label></div>
+          <div class="subfield hidden">
+            <label>Amount of messages per second: <input type="number" size="2" max="50" min="1" id="settings-message-rate"/></label>
+            <span class="help" title="More information" data-title="Limit how many messages will be shown per second by putting new messages in a queue. Discards the oldest messages if the queue overflows."></span>
+          </div>
         </div>
         <div><label><input type="checkbox" id="settings-new-messages-on-top"/> New messages appear at the top</label></div>
         <div>
           <label><input type="checkbox" id="settings-smooth-scroll"/> Smooth scrolling</label>
-          <div class="subfield hidden"><label>Time allowed for message to appear: <input type="number" size="5" max="10000" min="1" id="settings-smooth-scroll-duration"/> milliseconds</label></div>
+          <div class="subfield hidden">
+            <label>Time allowed for message to appear: <input type="number" size="5" max="10000" min="1" id="settings-smooth-scroll-duration"/> milliseconds</label>
+            <span class="help" title="More information" data-title="Determine how aggressive the scrolling should be for new or dequeued messages to fully appear."></span>
+          </div>
         </div>
-        <div><label><input type="checkbox" id="settings-combine-messages"/> Combine messages with the same content</label></div>
+        <div>
+          <label><input type="checkbox" id="settings-combine-messages"/> Combine messages with the same content</label>
+          <span class="help" title="More information" data-title="The previous chat message will show an increasing counter for each match and will be moved to the front of the chat again."></span>
+        </div>
       </div>
       <div>
         <h3>Message Handling</h3>
         <div><label><input type="checkbox" id="settings-format-urls"/> Turn URLs into clickable links</label></div>
-        <div><label><input type="checkbox" id="settings-shorten-urls"/> Shorten long URLs</label></div>
+        <div>
+          <label><input type="checkbox" id="settings-shorten-urls"/> Shorten long URLs</label>
+          <span class="help" title="More information" data-title="To preserve space, try to limit the lengt of a link. Usually done by truncating the path."></span>
+        </div>
         <div>
           <label><input type="checkbox" id="settings-inline-images"/> Show any images linked to by users</label>
+          <span class="help" title="More information" data-title="Load the images linked to by other users in chat. Links must end with a known image format or must point to Giphy or Imgur."></span>
           <div class="subfield hidden"><label>Maximum image size: <input type="number" size="2" max="80" min="5" id="settings-inline-images-height"/>% of available screen height</label></div>
         </div>
         <div><label><input type="checkbox" id="settings-unfurl-twitter"/> Unfurl Twitter links</label></div>
@@ -84,8 +98,14 @@
             <option value="long12">11:59:15 PM (hours:minutes:seconds AM/PM)</option>
           </select></label>
         </div>
-        <div><label>Highlight messages from <input type="text" placeholder="usernames separated by commas" id="settings-highlight-users" size="35"/></label></div>
-        <div><label>Highlight messages containing <input type="text" placeholder="keyphrases separated by commas" id="settings-highlight-keyphrases" size="35"/></label></div>
+        <div>
+          <label>Highlight messages from <input type="text" placeholder="usernames separated by commas" id="settings-highlight-users" size="35"/></label>
+          <span class="help" title="More information" data-title="You can add multiple usernames by separating them with commas, like so: username1,username2"></span>
+        </div>
+        <div>
+          <label>Highlight messages containing <input type="text" placeholder="keyphrases separated by commas" id="settings-highlight-keyphrases" size="35"/></label>
+          <span class="help" title="More information" data-title="You can add multiple keyphrases by separating them with commas, like so: keyphrase1,keyphrase2"></span>
+        </div>
       </div>
       <div>
         <h3>Message Types</h3>

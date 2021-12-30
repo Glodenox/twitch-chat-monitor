@@ -132,6 +132,7 @@ document.getElementById('settings-wheel').addEventListener('click', () => {
 	document.getElementById('settings').scrollTop = 0;
 	document.getElementById('settings-wheel').classList.toggle('open');
 });
+document.querySelectorAll('.help').forEach((help) => help.addEventListener('click', () => help.classList.toggle('visible')));
 // Twitch
 document.getElementById('settings-channel').value = Settings.get('channel');
 document.getElementById('settings-channel').addEventListener('input', (e) => e.target.value = e.target.value.replaceAll('https://www.twitch.tv/', '').replaceAll('twitch.tv/', ''));
