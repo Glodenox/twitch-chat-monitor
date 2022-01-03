@@ -64,6 +64,35 @@ var HexCompressor = function() {
 	};
 }();
 
+var Badges = function() {
+	var globalBadges = {};
+	var channelBadges = {};
+	var loadBadges = (url, handler, timeout = 2000) => {
+		fetch(url)
+			.then(response => {
+				if (response.ok) {
+					return response.json();
+				} else {
+					throw new Error(`Non-ok answer received from server: ${response.status} ${response.statusText}`);
+				}
+			})
+			.then(badgeSets => handler(badgeSets.badge_sets))
+			.catch(error => {
+				console.error(`Failed to retrieve badges at ${url}, attempting again in ${timeout}ms`, error);
+				setTimeout(() => loadBadges(url, handler, timeout * 2), timeout);
+			});
+	};
+	loadBadges('https://badges.twitch.tv/v1/badges/global/display?language=en', (badgeSet) => globalBadges = badgeSet);
+	return {
+		'lookup': (badge, version, channel) => globalBadges[badge]?.versions[version] ?? channelBadges[channel]?.[badge]?.versions[version] ?? null,
+		'load' : (channel) => {
+			if (channelBadges[channel] == undefined) {
+				loadBadges(`https://badges.twitch.tv/v1/badges/channels/${channel}/display?language=en`, (badgeSet) => channelBadges[channel] = badgeSet);
+			}
+		}
+	};
+}();
+
 var highlightUsers = Settings.get('highlight-users').toLowerCase().split(',').filter((user) => user != ''),
 	highlightKeyphrases = Settings.get('highlight-keyphrases').toLowerCase().split(',').filter((phrase) => phrase != '');
 
@@ -318,9 +347,6 @@ document.addEventListener('mousemove', () => {
 	}
 });
 
-document.getElementById('chat').classList.toggle('align-messages', Settings.get('align-messages'));
-document.getElementById('settings-align-messages').checked = Settings.get('align-messages');
-configureToggler('align-messages', () => document.getElementById('chat').classList.toggle('align-messages', Settings.get('align-messages')));
 // Chat Behavior
 document.body.classList.toggle('limit-message-rate', !Settings.get('limit-message-rate'));
 document.getElementById('settings-limit-message-rate').checked = Settings.get('limit-message-rate');
@@ -365,6 +391,12 @@ document.getElementById('settings-smooth-scroll-duration').addEventListener('inp
 	}
 });
 // Message Handling
+document.getElementById('chat').classList.toggle('align-messages', Settings.get('align-messages'));
+document.getElementById('settings-align-messages').checked = Settings.get('align-messages');
+configureToggler('align-messages', () => document.getElementById('chat').classList.toggle('align-messages', Settings.get('align-messages')));
+document.getElementById('chat').classList.toggle('show-badges', Settings.get('show-badges'));
+document.getElementById('settings-show-badges').checked = Settings.get('show-badges');
+configureToggler('show-badges', () => document.getElementById('chat').classList.toggle('show-badges', Settings.get('show-badges')));
 ['combine-messages', 'format-urls', 'shorten-urls', 'unfurl-youtube', 'show-subscriptions', 'show-bits', 'show-mod-actions'].forEach(configureToggler);
 configureToggler('inline-images', () => document.getElementById('settings-inline-images').parentNode.nextElementSibling.classList.toggle('hidden', !Settings.get('inline-images')));
 if (Settings.get('inline-images')) {
@@ -464,7 +496,6 @@ function scrollUp(now) {
 	window.requestAnimationFrame(scrollUp);
 }
 window.requestAnimationFrame(scrollUp);
-
 
 /** Chat event handling **/
 function handleChat(channel, userstate, message) {
@@ -576,6 +607,7 @@ function processChat(channel, userstate, message) {
 
 function handleRoomstate(channel, state) {
 	if (roomstate.channel != channel) {
+		Badges.load(state['room-id']);
 		flushMessageQueue();
 		addNotice(`Joined ${channel}.`);
 		if (state.slow) {
@@ -596,7 +628,7 @@ function handleSubscription(username, message, userstate) {
 		return;
 	}
 	var chatLine = document.createElement('div');
-	chatLine.className = 'highlight';
+	chatLine.className = 'highlight subscription';
 
 	var subscriptionNotice = document.createElement('div');
 	subscriptionNotice.textContent = userstate['system-msg'].replaceAll('\\s', ' ');
@@ -679,16 +711,29 @@ function configureToggler(key, callback) {
 }
 
 function createChatLine(userstate, message) {
-	// <div><span class="chat-user moderator">$username</span><span id="$msg-id">$message</span></div>
+	// <div><span class="timestamp">$timestamp</span><span class="chat-user moderator">$username</span><span id="$msg-id">$message</span></div>
 	var chatLine = document.createElement('div'),
 		chatTimestamp = document.createElement('span'),
 		chatName = document.createElement('span'),
+		chatBadges = document.createElement('span'),
 		chatMessage = document.createElement('span');
 
 	chatTimestamp.className = 'timestamp';
 	chatTimestamp.dataset.timestamp = userstate['tmi-sent-ts'] || Date.now();
 	updateTimestamp(chatTimestamp);
 	chatLine.appendChild(chatTimestamp);
+	chatBadges.className = 'badges';
+	Object.entries(userstate.badges ?? {}).forEach(([badge, version]) => {
+		var badgeData = Badges.lookup(badge, version, userstate['room-id']);
+		if (badgeData) {
+			var badge = document.createElement('img');
+			badge.src = badgeData.image_url_1x;
+			badge.srcset = `${badgeData.image_url_1x} 1x, ${badgeData.image_url_2x} 2x, ${badgeData.image_url_4x} 4x`;
+			badge.title = badgeData.title;
+			chatBadges.appendChild(badge);
+		}
+	});
+	chatLine.appendChild(chatBadges);
 	chatName.className = 'chat-user';
 	if (userstate.mod) {
 		chatName.classList.add('moderator');

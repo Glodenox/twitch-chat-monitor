@@ -83,17 +83,17 @@ body.reverse-order #chat {
   width: 550px;
 }
 
-#chat .chat-user:after {
+#chat .chat-user::after {
   color: #eee;
   color: var(--text-color);
   font-weight: 300;
 }
 
-#chat .chat-user:not(.action):after {
+#chat .chat-user:not(.action)::after {
   content: ': ';
 }
 
-#chat .chat-user.action:after {
+#chat .chat-user.action::after {
   content: '  ';
 }
 
@@ -117,11 +117,14 @@ body.reverse-order #chat {
   padding-right: 5px;
 }
 
+#chat.align-messages div.notice .chat-user, #chat.align-messages div.highlight .chat-user {
+  flex-basis: 258px;
+}
+
 #chat.align-messages div {
   display: flex;
 }
-
-#chat.align-messages div span {
+#chat.align-messages div.subscription {
   display: block;
 }
 
@@ -176,10 +179,26 @@ body.reverse-order #chat {
   color: yellow;
 }
 
-#chat .emoticon {
+#chat:not(.show-badges) .badges {
+  display: none;
+}
+
+#chat img.emoticon, #chat .badges img {
   height: calc(var(--font-size) - 2px);
   object-fit: contain;
   vertical-align: bottom;
+}
+
+#chat.align-messages .badges {
+  flex-basis: calc(var(--font-size) * 3 + 4px);
+  flex-shrink: 0;
+}
+
+#chat .badges img {
+  margin-right: 5px;
+}
+#chat.align-messages .badges img:last-child {
+  margin-right: 0;
 }
 
 #chat .counter {
@@ -498,7 +517,7 @@ body.reverse-order #message-entry {
   margin: 0 5px;
 }
 
-#message-username:after {
+#message-username::after {
   content: ': ';
 }
 
@@ -515,7 +534,7 @@ body.reverse-order #message-entry {
   cursor: pointer;
   vertical-align: super;
 }
-.help:after {
+.help::after {
   content: attr(data-title);
   display: none;
   border: 1px solid #eee;
@@ -527,11 +546,11 @@ body.reverse-order #message-entry {
   background-color: var(--background-color);
   padding: 4px;
 }
-.help.visible:after {
+.help.visible::after {
   display: block;
 }
 
-.help:hover:after {
+.help:hover::after {
   opacity: 1;
   transition: all 0.1s ease 0.3s;
   visibility: visible;

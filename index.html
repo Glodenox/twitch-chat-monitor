@@ -1,4 +1,5 @@
 <!doctype html>
+<!-- The default settings can be found at the end of this file -->
 <html>
   <head>
     <meta charset="utf-8">
@@ -48,7 +49,6 @@
         </div>
         <div id="settings-custom-style-exchange"><label>Custom style import/export: <input size="36" type="text" id="settings-custom-style-exchange-field"/></label></div>
         <div><label><input type="checkbox" id="settings-hide-cursor"/> Hide cursor when it hasn't moved for 4 seconds</label></div>
-        <div><label><input type="checkbox" id="settings-align-messages"/> Line up messages vertically</label></div>
         <div><label>Font size: <input type="number" size="3" max="200" min="4" id="settings-font-size"/> pixels</label></div>
       </div>
       <div>
@@ -75,14 +75,16 @@
       </div>
       <div>
         <h3>Message Handling</h3>
+        <div><label><input type="checkbox" id="settings-align-messages"/> Line up messages vertically</label></div>
+        <div><label><input type="checkbox" id="settings-show-badges"/> Show user badges</label></div>
         <div><label><input type="checkbox" id="settings-format-urls"/> Turn URLs into clickable links</label></div>
         <div>
           <label><input type="checkbox" id="settings-shorten-urls"/> Shorten long URLs</label>
-          <span class="help" title="More information" data-title="To preserve space, try to limit the lengt of a link. Usually done by truncating the path."></span>
+          <span class="help" title="More information" data-title="To preserve space, try to limit the length of a link. Usually done by truncating the path."></span>
         </div>
         <div>
           <label><input type="checkbox" id="settings-inline-images"/> Show any images linked to by users</label>
-          <span class="help" title="More information" data-title="Load the images linked to by other users in chat. Links must end with a known image format or must point to Giphy or Imgur."></span>
+          <span class="help" title="More information" data-title="Load the images linked to by other users in chat. Links must end with a known image extension or must point to Giphy or Imgur."></span>
           <div class="subfield hidden"><label>Maximum image size: <input type="number" size="2" max="80" min="5" id="settings-inline-images-height"/>% of available screen height</label></div>
         </div>
         <div><label><input type="checkbox" id="settings-unfurl-twitter"/> Unfurl Twitter links</label></div>
@@ -197,6 +199,7 @@ var defaultSettings = {
   'smooth-scroll': true,
   'smooth-scroll-duration': 1000,  // Time in milliseconds allowed for a message to appear
   'combine-messages': false,
+  'show-badges': false,
   'format-urls': true,
   'shorten-urls': true,
   'inline-images': true,
