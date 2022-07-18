@@ -10,6 +10,7 @@ var chat = document.getElementById('chat'),
 	lastFrameReset,
 	lastMoveTimeoutId = null,
 	messageQueue = [],
+	delayQueue = [],
 	lastMessageTimestamp = 0;
 
 
@@ -405,6 +406,16 @@ document.getElementById('settings-smooth-scroll-duration').addEventListener('inp
 		Settings.set('smooth-scroll-duration', duration);
 	}
 });
+
+document.getElementById('settings-chat-delay').value = Settings.get('chat-delay');
+document.getElementById('settings-chat-delay').addEventListener('change', (e) => {
+	Settings.set('chat-delay', e.target.value);
+	addNotice(`Artificial chat delay set to ${e.target.value} second${e.target.value == 1 ? '' : 's'}`);
+	if (e.target.value == 0) {
+		flushDelayQueue();
+	}
+});
+
 // Message Handling
 document.getElementById('chat').classList.toggle('align-messages', Settings.get('align-messages'));
 document.getElementById('settings-align-messages').checked = Settings.get('align-messages');
@@ -484,6 +495,11 @@ var lastFrame = +new Date();
 function step(now) {
 	if (Settings.get('show-fps')) {
 		frames++;
+	}
+	if (Settings.get('chat-delay') != 0) {
+		while (delayQueue.length > 0 && parseInt(delayQueue[0].dataset.timestamp) + (Settings.get('chat-delay') * 1000) < Date.now()) {
+			addMessage(delayQueue.shift(), true);
+		}
 	}
 	if (Settings.get('limit-message-rate')) {
 		if (messageQueue.length > 40) {
@@ -623,6 +639,7 @@ function processChat(channel, userstate, message) {
 function handleRoomstate(channel, state) {
 	if (roomstate.channel != channel) {
 		Badges.load(state['room-id']);
+		flushDelayQueue();
 		flushMessageQueue();
 		addNotice(`Joined ${channel}.`);
 		if (state.slow) {
@@ -633,6 +650,9 @@ function handleRoomstate(channel, state) {
 		}
 		if (state['emote-only']) {
 			addNotice(`Channel is in emote-only mode.`);
+		}
+		if (Settings.get('chat-delay') != 0) {
+			addNotice(`Chat is set to an artificial delay of ${Settings.get('chat-delay')} second${Settings.get('chat-delay') == 1 ? '' : 's'}.`);
 		}
 	}
 	roomstate = state;
@@ -786,7 +806,12 @@ function addNotice(message) {
 	addMessage(chatLine);
 }
 
-function addMessage(chatLine) {
+function addMessage(chatLine, bypass) {
+	if (chatLine.className != 'notice' && !bypass && Settings.get('chat-delay') != 0) {
+		chatLine.dataset.timestamp = Date.now();
+		delayQueue.push(chatLine);
+		return;
+	}
 	chat.appendChild(chatLine);
 	// Calculate height for smooth scrolling
 	scrollReference = scrollDistance += chatLine.scrollHeight;
@@ -922,6 +947,11 @@ function formatLinks(text, originalText) {
 function flushMessageQueue() {
 	messageQueue.forEach((args) => processChat.apply(this, args));
 	messageQueue = [];
+}
+
+function flushDelayQueue() {
+	delayQueue.forEach((chatLine) => addMessage(chatLine, true));
+	delayQueue = [];
 }
 
 function createStylePreview(style) {
