@@ -113,12 +113,12 @@ client.addListener('subscription', (channel, username, method, message, userstat
 client.addListener('resub', (channel, username, months, message, userstate, methods) => handleSubscription(username, message, userstate));
 client.addListener('submysterygift', (channel, username, numbOfSubs, methods, userstate) => handleSubscription(username, null, userstate));
 client.addListener('cheer', handleCheer);
-client.addListener('raided', (channel, username, viewers, tags) => addNotice(`${username} raided the channel with ${viewers} viewers!`));
+client.addListener('raided', (channel, username, viewers) => addNotice(`${username} raided the channel with ${viewers} viewers!`));
 client.addListener('slowmode', (channel, enabled, length) => addNotice(`Slowmode chat has been ${enabled ? 'activated' : 'deactivated'}.`));
 client.addListener('followersonly', (channel, enabled, length) => addNotice(`Followers-only chat has been ${enabled ? 'activated' : 'deactivated'}.`));
 client.addListener('emoteonly', (channel, enabled) => addNotice(`Emote-only chat has been ${enabled ? 'activated' : 'deactivated'}.`));
-client.addListener('hosting', (channel, target, viewers) => addNotice(`The channel is now hosting ${target}.`));
-client.addListener('unhost', (channel, viewers) => addNotice(`The channel has stopped hosting another channel.`));
+client.addListener('hosting', (channel, target) => addNotice(`The channel is now hosting ${target}.`));
+client.addListener('unhost', (channel) => addNotice(`The channel has stopped hosting another channel.`));
 client.addListener('messagedeleted', handleMessageDeletion);
 client.addListener('ban', (channel, username, reason, userstate) => handleModAction('ban', username, null, userstate));
 client.addListener('timeout', (channel, username, reason, duration, userstate) => handleModAction('timeout', username, duration, userstate));
