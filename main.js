@@ -479,9 +479,9 @@ document.body.addEventListener('keydown', (e) => {
 });
 
 
-// Continually scroll, in a way to make the comments readable
+// Process the next frame, this is the main driver of the application
 var lastFrame = +new Date();
-function scrollUp(now) {
+function step(now) {
 	if (Settings.get('show-fps')) {
 		frames++;
 	}
@@ -508,9 +508,9 @@ function scrollUp(now) {
 		chatContainer.scrollTop = Math.round(Settings.get('new-messages-on-top') ? scrollDistance : chatContainer.scrollHeight - window.innerHeight - scrollDistance);
 	}
 	lastFrame = now;
-	window.requestAnimationFrame(scrollUp);
+	window.requestAnimationFrame(step);
 }
-window.requestAnimationFrame(scrollUp);
+window.requestAnimationFrame(step);
 
 /** Chat event handling **/
 function handleChat(channel, userstate, message) {
