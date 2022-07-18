@@ -135,6 +135,9 @@ client.addListener('connected', () => {
 	document.getElementById('network-status').classList.add('hidden');
 });
 client.connect();
+if (Settings.get('adjust-page-title')) {
+	document.title = ensureHash(options.channels[0]) + ' - Chat Monitor';
+}
 
 /** Interface interactions **/
 // Message sending
@@ -172,6 +175,9 @@ document.getElementById('settings-channel').form.addEventListener('submit', (e) 
 		// Fade out all previous channel messages before joining new one
 		document.querySelectorAll('#chat > div').forEach((msg) => msg.style.opacity = 0.5);
 		Settings.set('channel', channel);
+		if (Settings.get('adjust-page-title')) {
+			document.title = ensureHash(channel) + ' - Chat Monitor';
+		}
 		client.join(ensureHash(channel));
 	}
 	e.preventDefault();
@@ -344,6 +350,15 @@ document.addEventListener('mousemove', () => {
 		document.body.classList.remove('hide-cursor');
 		clearTimeout(lastMoveTimeoutId);
 		lastMoveTimeoutId = setTimeout(() => Settings.get('hide-cursor') && document.body.classList.add('hide-cursor'), 4000);
+	}
+});
+
+document.getElementById('settings-adjust-page-title').checked = Settings.get('adjust-page-title');
+configureToggler('adjust-page-title', () => {
+	if (!Settings.get('adjust-page-title')) {
+		document.title = 'Chat Monitor';
+	} else {
+		document.title = ensureHash(Settings.get('channel')) + ' - Chat Monitor';
 	}
 });
 
