@@ -229,17 +229,17 @@ body.reverse-order #commands {
   top: 5px;
 }
 
-#fullscreen, #settings-wheel {
+#fullscreen, #settings-toggle {
   z-index: 10;
   opacity: 0.3;
   margin-left: 25px;
   cursor: pointer;
 }
-#fullscreen:hover, #settings-wheel:hover, #settings-wheel.open {
+#fullscreen:hover, #settings-toggle:hover, #settings-toggle.open {
   opacity: 1;
 }
 
-body.reverse-order #settings-wheel {
+body.reverse-order #settings-toggle {
   top: 5px;
   bottom: auto;
 }

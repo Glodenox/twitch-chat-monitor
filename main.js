@@ -160,10 +160,10 @@ if (document.body.classList.contains('show-message-entry')) {
 	document.querySelector('#message-entry .message-field').focus();
 }
 // Settings
-document.getElementById('settings-wheel').addEventListener('click', () => {
+document.getElementById('settings-toggle').addEventListener('click', () => {
 	document.getElementById('settings').classList.toggle('hidden');
 	document.getElementById('settings').scrollTop = 0;
-	document.getElementById('settings-wheel').classList.toggle('open');
+	document.getElementById('settings-toggle').classList.toggle('open');
 });
 document.querySelectorAll('.help').forEach((help) => help.addEventListener('click', () => help.classList.toggle('visible')));
 // Twitch
@@ -480,11 +480,11 @@ document.body.addEventListener('keydown', (e) => {
 	} else if ((e.key == 'S' || e.key == 's') && e.shiftKey && e.ctrlKey) {
 		document.getElementById('settings').classList.toggle('hidden');
 		document.getElementById('settings').scrollTop = 0;
-		document.getElementById('settings-wheel').classList.toggle('open');
+		document.getElementById('settings-toggle').classList.toggle('open');
 		e.preventDefault();
 	} else if ((e.key == 'Escape')) {
 		document.getElementById('settings').classList.add('hidden');
-		document.getElementById('settings-wheel').classList.remove('open');
+		document.getElementById('settings-toggle').classList.remove('open');
 		e.preventDefault();
 	}
 });
