@@ -97,11 +97,9 @@ var highlightUsers = Settings.get('highlight-users').toLowerCase().split(',').fi
 	highlightKeyphrases = Settings.get('highlight-keyphrases').toLowerCase().split(',').filter((phrase) => phrase != '');
 
 /** Set up chat client **/
-var channelFromPath = (document.location.href.match(/channel=([A-Za-z0-9_]+)/) || [null])[1];
 var options = {
 	skipMembership: true,
-	updateEmotesetsTimer: 30*60*1000, // once per half an hour should be sufficient
-	channels: [ ensureHash(channelFromPath || Settings.get('channel')) ]
+	updateEmotesetsTimer: 30*60*1000 // once per half an hour should be sufficient
 };
 if (Settings.get('identity')) {
 	options.identity = Settings.get('identity');
@@ -134,10 +132,10 @@ client.addListener('connected', () => {
 	}
 	document.getElementById('network-status').classList.add('hidden');
 });
-client.connect();
-if (Settings.get('adjust-page-title')) {
-	document.title = ensureHash(options.channels[0]) + ' - Chat Monitor';
-}
+client.connect().then(() => {
+	let channelFromPath = (document.location.href.match(/channel=([A-Za-z0-9_]+)/) || [null])[1];
+	joinChannel(channelFromPath || Settings.get('channel'));
+});
 
 /** Interface interactions **/
 // Message sending
@@ -170,15 +168,14 @@ document.getElementById('settings-channel').value = Settings.get('channel');
 document.getElementById('settings-channel').addEventListener('input', (e) => e.target.value = e.target.value.replaceAll('https://www.twitch.tv/', '').replaceAll('twitch.tv/', ''));
 document.getElementById('settings-channel').form.addEventListener('submit', (e) => {
 	var channel = document.getElementById('settings-channel').value;
-	if (channel != '' && channel != Settings.get('channel')) {
-		client.leave(ensureHash(Settings.get('channel')));
+	if (channel != '' && client.channels.indexOf(ensureHash(channel)) == -1) {
+		if (client.channels.length > 0) {
+			client.leave(ensureHash(client.channels[0]));
+		}
 		// Fade out all previous channel messages before joining new one
 		document.querySelectorAll('#chat > div').forEach((msg) => msg.style.opacity = 0.5);
 		Settings.set('channel', channel);
-		if (Settings.get('adjust-page-title')) {
-			document.title = ensureHash(channel) + ' - Chat Monitor';
-		}
-		client.join(ensureHash(channel));
+		joinChannel(channel);
 	}
 	e.preventDefault();
 });
@@ -488,6 +485,33 @@ document.body.addEventListener('keydown', (e) => {
 	}
 });
 
+function joinChannel(channel) {
+	client.join(ensureHash(channel)).then(() => {
+		console.log('Joined channel ' + channel);
+		if (Settings.get('adjust-page-title')) {
+			document.title = ensureHash(channel) + ' - Chat Monitor';
+		}
+	}, (error) => {
+		addNotice(`Failed to join requested channel. Reason: ${decodeMessageId(error)}`);
+		console.error('Failed to join requested channel', error);
+		if (Settings.get('adjust-page-title')) {
+			document.title = 'Chat Monitor';
+		}
+	});
+}
+
+// Decode a Message ID returned by the Twitch API to a human-readable message
+function decodeMessageId(messageId) {
+	let knownMessages = {
+		'msg_banned': 'You are permanently banned from talking in this channel.',
+		'msg_channel_blocked': 'Your account is not in good standing in this channel.',
+		'msg_channel_suspended': 'This channel does not exist or has been suspended.',
+		'msg_requires_verified_phone_number': 'A verified phone number is required to chat in this channel. Please visit https://www.twitch.tv/settings/security to verify your phone number.',
+		'msg_suspended': 'You don\'t have permission to perform that action.',
+		'msg_verified_email': 'This room requires a verified account to chat. Please verify your account at https://www.twitch.tv/settings/security.'
+	};
+	return knownMessages[messageId] || messageId;
+}
 
 // Process the next frame, this is the main driver of the application
 var lastFrame = +new Date();
