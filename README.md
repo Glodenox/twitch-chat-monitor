@@ -1,6 +1,6 @@
 # Twitch Chat Monitor
 
-A tool that monitors and displays Twitch chat channels in a bigger font, ideal for displaying on a big monitor for room-scale Twitch streaming.
+A tool that monitors and displays Twitch chat channels in a bigger font, ideal for displaying on a big monitor for room-scale Twitch streaming. Or it can just give a much cleaner and flexible lightweight way of displaying the Twitch chat.
 
 ![Interface example](./img/example.png)
 
@@ -23,23 +23,23 @@ Note that all these features can be enabled or disabled.
 
 Several more features are in [the pipeline](https://github.com/Glodenox/twitch-chat-monitor/issues)!
 
-## Usage
+## Using the monitor
 
-By opening the web page, the monitor will connect to the default Twitch channel or the channel you monitored most recently. At the top or bottom right you can find the settings menu. In this menu it is possible to modify all configuration options. These settings are stored in your browser and become active immediately when changed. Do note that some message-related settings will only have an effect on new incoming messages.
+When you open the page, the chat monitor will connect to the default Twitch channel or the channel you monitored most recently. At the top or bottom right you can find the settings menu. In this menu it is possible to modify all configuration options. These settings are stored in your browser and become active immediately when changed.
 
-## How to get
+## Getting the monitor
 
 ### Available pre-hosted on github.io
 
-The latest version of the tool is available at [https://glodenox.github.io/twitch-chat-monitor/](https://glodenox.github.io/twitch-chat-monitor/) and can be used from there.
+The latest version of the tool is always available at [https://glodenox.github.io/twitch-chat-monitor/](https://glodenox.github.io/twitch-chat-monitor/) and can be used from there. The initial channel can be changed by adding it in the URL, like so: `https://glodenox.github.io/twitch-chat-monitor/?channel=<channel name here>`.
 
 ### Hosted on your own domain or as a local web page
 
-If you want to have some predefined settings set (like the channel), you can host the tool yourself. You just need to [download the files](https://github.com/Glodenox/twitch-chat-monitor/archive/master.zip) and place these on a server. Alternatively you can also just open the `index.html` file locally.
+If you want to have other predefined settings set (like the channel), you can host the tool yourself. You just need to [download the files](https://github.com/Glodenox/twitch-chat-monitor/archive/master.zip) and place these on a server. Alternatively you can also just open the `index.html` file locally.
 
 The project consists of 4 files:
 
-* *index.html*: the web page you want to open in a browser to see the chat, contains the default settings
+* *index.html*: the web page you want to open in a browser to see the chat, this file contains the default settings at the end. Most likely, this will be the only file you will change when you host the monitor yourself.
 * *main.js*: main JavaScript file
 * *tmi.js*: a copy of the [tmi.js JavaScript library for Twitch](https://github.com/tmijs/tmi.js)
 * *style.css*: CSS styles are stored here
@@ -47,4 +47,4 @@ The project consists of 4 files:
 ## Acknowledgments
 
 This tool is heavily based on the [Nifty Chat Monitor userscript](https://github.com/paul-lrr/nifty-chat-monitor), but uses the Twitch WebSocket API directly instead of transforming the Twitch chat embed page.
-A special thanks to the LoadingReadyRun chat for giving feedback on several of the features!
+A special thanks to [the LoadingReadyRun chat](https://www.twitch.tv/loadingreadyrun) for giving feedback on several of the features!
