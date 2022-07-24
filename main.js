@@ -1,6 +1,4 @@
-var chat = document.getElementById('chat'),
-	chatContainer = document.getElementById('chat-container'),
-	scrollDistance = 0, // How many pixels are we currently still hiding?
+var scrollDistance = 0, // How many pixels are we currently still hiding?
 	scrollReference = 0, // Distance when we started scrolling
 	imageExtensions = ['.jpg', '.jpeg', '.gif', '.png', '.webp', '.av1'],
 	bitLevels = [ 10000, 1000, 500, 100, 1 ],
@@ -96,41 +94,119 @@ var Badges = function() {
 var highlightUsers = Settings.get('highlight-users').toLowerCase().split(',').filter((user) => user != ''),
 	highlightKeyphrases = Settings.get('highlight-keyphrases').toLowerCase().split(',').filter((phrase) => phrase != '');
 
+// Object containing references to all relevant UI blocks
+var ui = {
+	main: {
+		curtain: document.getElementById('curtain'),
+		fps: document.getElementById('fps')
+	},
+	chat: {
+		body: document.getElementById('chat'),
+		container: document.getElementById('chat-container')
+	},
+	commands: {
+		body: document.getElementById('commands'),
+		settings: document.getElementById('settings-toggle'),
+		fullscreen: document.getElementById('fullscreen')
+	},
+	messageEntry: {
+		body: document.getElementById('message-entry'),
+		username:  document.getElementById('message-username'),
+		field: document.querySelector('#message-entry .message-field')
+	},
+	settings: {
+		body: document.getElementById('settings'),
+		twitch: {
+			channel: document.getElementById('settings-channel'),
+			identity: {
+				toggle: document.getElementById('settings-twitch-messagefield'),
+				body: document.getElementById('settings-twitch-messaging'),
+				username: document.getElementById('settings-twitch-username'),
+				token: document.getElementById('settings-twitch-token')
+			}
+		},
+		style: {
+			custom: {
+				container: document.getElementById('styles'),
+				selector: document.getElementById('settings-custom-style'),
+				exchange: document.getElementById('settings-custom-style-exchange'),
+				field: document.getElementById('settings-custom-style-exchange-field'),
+				preview: document.getElementById('style-template')
+			},
+			fontSize: document.getElementById('settings-font-size'),
+			hideCursor: document.getElementById('settings-hide-cursor'),
+			adjustTitle: document.getElementById('settings-adjust-page-title')
+		},
+		behaviour: {
+			limitRate: {
+				toggle: document.getElementById('settings-limit-message-rate'),
+				body: document.getElementById('settings-limit-message-rate').parentNode.nextElementSibling,
+				field: document.getElementById('settings-message-rate')
+			},
+			reverseOrder: document.getElementById('settings-new-messages-on-top'),
+			smoothScroll: {
+				body: document.getElementById('settings-smooth-scroll').parentNode.nextElementSibling,
+				duration: document.getElementById('settings-smooth-scroll-duration')
+			},
+			chatDelay: document.getElementById('settings-chat-delay')
+		},
+		messageHandling: {
+			inlineImages: {
+				body: document.getElementById('settings-inline-images').parentNode.nextElementSibling,
+				height: document.getElementById('settings-inline-images-height')
+			},
+			timestamps: document.getElementById('settings-timestamps'),
+			highlightUsers: document.getElementById('settings-highlight-users'),
+			keyPhrases: document.getElementById('settings-highlight-keyphrases')
+		}
+	},
+	notifications: {
+		chatOverload: {
+			body: document.getElementById('chat-overload'),
+			count: document.getElementById('chat-overload-count')
+		},
+		networkStatus: document.getElementById('network-status'),
+		keyPhrases: document.getElementById('settings-highlight-keyphrases')
+	}
+};
+
 /** Set up chat client **/
-var options = {
-	skipMembership: true,
-	updateEmotesetsTimer: 30*60*1000 // once per half an hour should be sufficient
+var configuration = {
+	options: {
+		skipMembership: true,
+		skipUpdatingEmotesets: true // the API no longer exists on Kraken
+	}
 };
 if (Settings.get('identity')) {
-	options.identity = Settings.get('identity');
+	configuration.identity = Settings.get('identity');
 }
-var client = new tmi.client(options);
-client.addListener('message', handleChat);
-client.addListener('roomstate', handleRoomstate);
-client.addListener('subscription', (channel, username, method, message, userstate) => handleSubscription(username, message, userstate));
-client.addListener('resub', (channel, username, months, message, userstate, methods) => handleSubscription(username, message, userstate));
-client.addListener('submysterygift', (channel, username, numbOfSubs, methods, userstate) => handleSubscription(username, null, userstate));
-client.addListener('cheer', handleCheer);
-client.addListener('raided', (channel, username, viewers) => addNotice(`${username} raided the channel with ${viewers} viewers!`));
-client.addListener('slowmode', (channel, enabled, length) => addNotice(`Slowmode chat has been ${enabled ? 'activated' : 'deactivated'}.`));
-client.addListener('followersonly', (channel, enabled, length) => addNotice(`Followers-only chat has been ${enabled ? 'activated' : 'deactivated'}.`));
-client.addListener('emoteonly', (channel, enabled) => addNotice(`Emote-only chat has been ${enabled ? 'activated' : 'deactivated'}.`));
-client.addListener('hosting', (channel, target) => addNotice(`The channel is now hosting ${target}.`));
-client.addListener('unhost', (channel) => addNotice(`The channel has stopped hosting another channel.`));
-client.addListener('messagedeleted', handleMessageDeletion);
-client.addListener('ban', (channel, username, reason, userstate) => handleModAction('ban', username, null, userstate));
-client.addListener('timeout', (channel, username, reason, duration, userstate) => handleModAction('timeout', username, duration, userstate));
-client.addListener('clearchat', (channel) => {
-	chat.textContent = '';
+var client = new tmi.client(configuration);
+client.on('message', handleChat);
+client.on('roomstate', handleRoomstate);
+client.on('subscription', (channel, username, method, message, userstate) => handleSubscription(username, message, userstate));
+client.on('resub', (channel, username, months, message, userstate, methods) => handleSubscription(username, message, userstate));
+client.on('submysterygift', (channel, username, numbOfSubs, methods, userstate) => handleSubscription(username, null, userstate));
+client.on('cheer', handleCheer);
+client.on('raided', (channel, username, viewers) => addNotice(`${username} raided the channel with ${viewers} viewers!`));
+client.on('slowmode', (channel, enabled, length) => addNotice(`Slowmode chat has been ${enabled ? 'activated' : 'deactivated'}.`));
+client.on('followersonly', (channel, enabled, length) => addNotice(`Followers-only chat has been ${enabled ? 'activated' : 'deactivated'}.`));
+client.on('emoteonly', (channel, enabled) => addNotice(`Emote-only chat has been ${enabled ? 'activated' : 'deactivated'}.`));
+client.on('hosting', (channel, target) => addNotice(`The channel is now hosting ${target}.`));
+client.on('unhost', (channel) => addNotice(`The channel has stopped hosting another channel.`));
+client.on('messagedeleted', handleMessageDeletion);
+client.on('ban', (channel, username, reason, userstate) => handleModAction('ban', username, null, userstate));
+client.on('timeout', (channel, username, reason, duration, userstate) => handleModAction('timeout', username, duration, userstate));
+client.on('clearchat', (channel) => {
+	ui.chat.body.textContent = '';
 	addNotice('Chat has been cleared by a moderator');
 });
 // Network connection monitoring
-client.addListener('disconnected', () => document.getElementById('network-status').classList.remove('hidden'));
-client.addListener('connected', () => {
-	if (!document.getElementById('network-status').classList.contains('hidden')) {
+client.on('disconnected', () => ui.notifications.networkStatus.classList.remove('hidden'));
+client.on('connected', () => {
+	if (!ui.notifications.networkStatus.classList.contains('hidden')) {
 		addNotice('Connection reestablished, resuming chat monitoring.');
 	}
-	document.getElementById('network-status').classList.add('hidden');
+	ui.notifications.networkStatus.classList.add('hidden');
 });
 client.connect().then(() => {
 	let channelFromPath = (document.location.href.match(/channel=([A-Za-z0-9_]+)/) || [null])[1];
@@ -139,82 +215,85 @@ client.connect().then(() => {
 
 /** Interface interactions **/
 // Message sending
-document.getElementById('message-entry').addEventListener('submit', (e) => {
-	if (document.querySelector('#message-entry .message-field').value.trim().length > 0) {
-		document.querySelector('#message-entry .message-field').disabled = true;
-		client.say(Settings.get('channel'), document.querySelector('#message-entry .message-field').value.trim()).then(() => {
-			document.querySelector('#message-entry .message-field').value = '';
-			document.querySelector('#message-entry .message-field').disabled = false;
-			document.querySelector('#message-entry .message-field').focus();
+ui.messageEntry.body.addEventListener('submit', (e) => {
+	let field = ui.messageEntry.field;
+	if (field.value.trim().length > 0) {
+		field.disabled = true;
+		client.say(Settings.get('channel'), field.value.trim()).then(() => {
+			field.value = '';
+			field.disabled = false;
+			field.focus();
 		}).catch(() => {
-			document.querySelector('#message-entry .message-field').disabled = false;
-			document.querySelector('#message-entry .message-field').focus();
+			field.disabled = false;
+			field.focus();
 		});
 	}
 	e.preventDefault();
 });
 if (document.body.classList.contains('show-message-entry')) {
-	document.querySelector('#message-entry .message-field').focus();
+	ui.messageEntry.field.focus();
 }
 // Settings
-document.getElementById('settings-toggle').addEventListener('click', () => {
-	document.getElementById('settings').classList.toggle('hidden');
-	document.getElementById('settings').scrollTop = 0;
-	document.getElementById('settings-toggle').classList.toggle('open');
+ui.commands.settings.addEventListener('click', () => {
+	ui.settings.body.classList.toggle('hidden');
+	ui.settings.body.scrollTop = 0;
+	ui.commands.settings.classList.toggle('open');
 });
 document.querySelectorAll('.help').forEach((help) => help.addEventListener('click', () => help.classList.toggle('visible')));
 // Twitch
-document.getElementById('settings-channel').value = Settings.get('channel');
-document.getElementById('settings-channel').addEventListener('input', (e) => e.target.value = e.target.value.replaceAll('https://www.twitch.tv/', '').replaceAll('twitch.tv/', ''));
-document.getElementById('settings-channel').form.addEventListener('submit', (e) => {
-	var channel = document.getElementById('settings-channel').value;
+ui.settings.twitch.channel.value = Settings.get('channel');
+ui.settings.twitch.channel.addEventListener('input', (e) => e.target.value = e.target.value.replaceAll('https://www.twitch.tv/', '').replaceAll('twitch.tv/', ''));
+ui.settings.twitch.channel.form.addEventListener('submit', (e) => {
+	var channel = ui.settings.twitch.channel.value;
 	if (channel != '' && client.channels.indexOf(ensureHash(channel)) == -1) {
 		if (client.channels.length > 0) {
 			client.leave(ensureHash(client.channels[0]));
 		}
 		// Fade out all previous channel messages before joining new one
-		document.querySelectorAll('#chat > div').forEach((msg) => msg.style.opacity = 0.5);
+		ui.chat.body.querySelectorAll('div').forEach((msg) => msg.style.opacity = 0.5);
 		Settings.set('channel', channel);
 		joinChannel(channel);
 	}
 	e.preventDefault();
 });
 if (Settings.get('identity')) {
-	document.getElementById('settings-twitch-username').value = Settings.get('identity').username;
-	document.getElementById('settings-twitch-token').value = Settings.get('identity').token;
-	document.getElementById('settings-twitch-messaging').classList.remove('disabled');
-	document.getElementById('settings-twitch-messagefield').classList.remove('disabled');
-	document.getElementById('settings-twitch-messagefield').disabled = false;
-	document.getElementById('message-username').textContent = Settings.get('identity').username;
+	let identity = ui.settings.twitch.identity;
+	identity.username.value = Settings.get('identity').username;
+	identity.token.value = Settings.get('identity').token;
+	identity.body.classList.remove('disabled');
+	identity.toggle.classList.remove('disabled');
+	identity.toggle.disabled = false;
+	identity.username.textContent = Settings.get('identity').username;
 	document.body.classList.toggle('show-message-entry', Settings.get('twitch-messagefield'));
 }
 configureToggler('twitch-messagefield', () => {
 	document.body.classList.toggle('show-message-entry', Settings.get('twitch-messagefield'));
 	if (Settings.get('twitch-messagefield') && client.username.toLowerCase() != Settings.get('identity').username.toLowerCase()) {
-			document.getElementById('message-username').textContent = Settings.get('identity').username;
+			ui.messageEntry.username.textContent = Settings.get('identity').username;
 			client.disconnect();
 			client.opts.identity = Settings.get('identity');
 			client.opts.username = Settings.get('identity').username;
 			client.connect();
 	}
 });
-document.getElementById('settings-twitch-username').addEventListener('input', (e) => {
-	if (e.target.value.length > 0 && document.getElementById('settings-twitch-token').value.length > 0 && document.getElementById('settings-twitch-token').validity.valid) {
+ui.settings.twitch.identity.username.addEventListener('input', (e) => {
+	let identity = ui.settings.twitch.identity;
+	if (e.target.value.length > 0 && identity.token.value.length > 0 && identity.token.validity.valid) {
 		Settings.set('identity', {
-			'username': document.getElementById('settings-twitch-username').value,
-			'password': document.getElementById('settings-twitch-token').value
+			'username': identity.username.value,
+			'password': identity.token.value
 		});
-		document.getElementById('settings-twitch-messaging').classList.remove('disabled');
-		document.getElementById('settings-twitch-messagefield').disabled = false;
+		identity.body.classList.remove('disabled');
+		identity.toggle.disabled = false;
 	} else {
-		document.getElementById('settings-twitch-messaging').classList.add('disabled');
-		document.getElementById('settings-twitch-messagefield').disabled = false;
-		document.getElementById('settings-twitch-messagefield').checked = false;
+		identity.body.classList.add('disabled');
+		identity.toggle.disabled = false;
+		identity.toggle.checked = false;
 		document.body.classList.remove('show-message-entry');
 		Settings.set('twitch-messagefield', false);
 		Settings.set('identity', null);
 		if (!client.username.startsWith('justinfan')) { // already logged out
-			document.getElementById('message-username').textContent = '';
+			identity.username.textContent = '';
 			client.disconnect();
 			client.opts.identity = {};
 			delete client.opts.username;
@@ -222,18 +301,19 @@ document.getElementById('settings-twitch-username').addEventListener('input', (e
 		}
 	}
 });
-document.getElementById('settings-twitch-token').addEventListener('input', (e) => {
+ui.settings.twitch.identity.token.addEventListener('input', (e) => {
+	let identity = ui.settings.twitch.identity;
 	if (!/^oauth:[0-9a-z]{30}$/.test(e.target.value)) {
 		e.target.setCustomValidity('Invalid token');
 		e.target.reportValidity();
-		document.getElementById('settings-twitch-messaging').classList.add('disabled');
-		document.getElementById('settings-twitch-messagefield').disabled = true;
-		document.getElementById('settings-twitch-messagefield').checked = false;
+		identity.body.classList.add('disabled');
+		identity.toggle.disabled = true;
+		identity.toggle.checked = false;
 		document.body.classList.remove('show-message-entry');
 		Settings.set('twitch-messagefield', false);
 		Settings.set('identity', null);
 		if (!client.username.startsWith('justinfan')) { // already logged out
-			document.getElementById('message-username').textContent = '';
+			identity.username.textContent = '';
 			client.disconnect();
 			client.opts.identity = {};
 			delete client.opts.username;
@@ -242,21 +322,21 @@ document.getElementById('settings-twitch-token').addEventListener('input', (e) =
 		return;
 	}
 	e.target.setCustomValidity('');
-	if (document.getElementById('settings-twitch-username').value.length > 0) {
+	if (identity.username.value.length > 0) {
 		Settings.set('identity', {
-			'username': document.getElementById('settings-twitch-username').value,
-			'password': document.getElementById('settings-twitch-token').value
+			'username': identity.username.value,
+			'password': identity.token.value
 		});
-		document.getElementById('settings-twitch-messaging').classList.remove('disabled');
-		document.getElementById('settings-twitch-messagefield').disabled = false;
+		identity.body.classList.remove('disabled');
+		identity.toggle.disabled = false;
 	}
 });
 // Style
 if (Settings.get('show-command-buttons')) {
-	document.getElementById('commands').classList.remove('hidden');
+	ui.commands.body.classList.remove('hidden');
 }
 if (document.fullscreenEnabled && Settings.get('support-fullscreen')) {
-	document.getElementById('fullscreen').addEventListener('click', () => {
+	ui.commands.fullscreen.addEventListener('click', () => {
 		if (document.fullscreenElement) {
 			document.exitFullscreen()
 		} else {
@@ -264,7 +344,7 @@ if (document.fullscreenEnabled && Settings.get('support-fullscreen')) {
 		}
 	});
 } else {
-	document.getElementById('fullscreen').classList.add('hidden');
+	ui.commands.fullscreen.classList.add('hidden');
 }
 [
 	{
@@ -320,7 +400,7 @@ colorFields.forEach(key => {
 	});
 });
 updateImportExport();
-document.getElementById('settings-custom-style-exchange-field').addEventListener('input', (e) => {
+ui.settings.style.custom.field.addEventListener('input', (e) => {
 	if (!/^[0-9a-zA-Z+#]{36}$/.test(e.target.value)) {
 		e.target.setCustomValidity('Invalid code');
 		e.target.reportValidity();
@@ -333,14 +413,14 @@ document.getElementById('settings-custom-style-exchange-field').addEventListener
 		document.getElementById('settings-' + key + '-color').value = newColor;
 	});
 });
-document.getElementById('settings-custom-style').classList.toggle('hidden', Settings.get('style-preset') != 'custom');
-document.getElementById('settings-custom-style-exchange').classList.toggle('hidden', Settings.get('style-preset') != 'custom');
+ui.settings.style.custom.selector.classList.toggle('hidden', Settings.get('style-preset') != 'custom');
+ui.settings.style.custom.exchange.classList.toggle('hidden', Settings.get('style-preset') != 'custom');
 
-document.getElementById('settings-font-size').value = Settings.get('font-size').slice(0, -2); // remove pixel unit
-document.getElementById('settings-font-size').addEventListener('change', (e) => Settings.set('font-size', e.target.value + 'px'));
+ui.settings.style.fontSize.value = Settings.get('font-size').slice(0, -2); // remove pixel unit
+ui.settings.style.fontSize.addEventListener('change', (e) => Settings.set('font-size', e.target.value + 'px'));
 
 document.body.classList.toggle('hide-cursor', Settings.get('hide-cursor'));
-document.getElementById('settings-hide-cursor').checked = Settings.get('hide-cursor');
+ui.settings.style.hideCursor.checked = Settings.get('hide-cursor');
 configureToggler('hide-cursor', () => document.body.classList.toggle('hide-cursor', Settings.get('hide-cursor')));
 document.addEventListener('mousemove', () => {
 	if (Settings.get('hide-cursor')) {
@@ -350,7 +430,7 @@ document.addEventListener('mousemove', () => {
 	}
 });
 
-document.getElementById('settings-adjust-page-title').checked = Settings.get('adjust-page-title');
+ui.settings.style.adjustTitle.checked = Settings.get('adjust-page-title');
 configureToggler('adjust-page-title', () => {
 	if (!Settings.get('adjust-page-title')) {
 		document.title = 'Chat Monitor';
@@ -361,50 +441,49 @@ configureToggler('adjust-page-title', () => {
 
 // Chat Behavior
 document.body.classList.toggle('limit-message-rate', !Settings.get('limit-message-rate'));
-document.getElementById('settings-limit-message-rate').checked = Settings.get('limit-message-rate');
+ui.settings.behaviour.limitRate.toggle.checked = Settings.get('limit-message-rate');
 configureToggler('limit-message-rate', () => {
 	document.body.classList.toggle('limit-message-rate', !Settings.get('limit-message-rate'));
-	document.getElementById('settings-limit-message-rate').parentNode.nextElementSibling.classList.toggle('hidden', !Settings.get('limit-message-rate'));
+	ui.settings.behaviour.limitRate.body.classList.toggle('hidden', !Settings.get('limit-message-rate'));
 	if (!Settings.get('limit-message-rate')) {
 		flushMessageQueue();
-		document.getElementById('chat-overload').classList.add('hidden');
+		ui.notifications.chatOverload.body.classList.add('hidden');
 	}
 });
 if (Settings.get('limit-message-rate')) {
-	document.getElementById('settings-limit-message-rate').parentNode.nextElementSibling.classList.remove('hidden');
+	ui.settings.behaviour.limitRate.body.classList.remove('hidden');
 }
-document.getElementById('settings-message-rate').value = Settings.get('message-rate');
-document.getElementById('settings-message-rate').addEventListener('input', (e) => {
+ui.settings.behaviour.limitRate.field.value = Settings.get('message-rate');
+ui.settings.behaviour.limitRate.field.addEventListener('input', (e) => {
 	var rate = parseInt(e.target.value);
 	if (!isNaN(rate) && e.target.validity.valid) {
 		Settings.set('message-rate', rate);
 	}
 });
 document.body.classList.toggle('reverse-order', !Settings.get('new-messages-on-top'));
-document.getElementById('settings-new-messages-on-top').checked = Settings.get('new-messages-on-top');
 configureToggler('new-messages-on-top', () => {
 	document.body.classList.toggle('reverse-order', !Settings.get('new-messages-on-top'));
 	scrollDistance = scrollReference = 0;
-	chatContainer.scrollTop = Settings.get('new-messages-on-top') ? 0 : chatContainer.scrollHeight - window.innerHeight;
+	ui.chat.container.scrollTop = Settings.get('new-messages-on-top') ? 0 : ui.chat.container.scrollHeight - window.innerHeight;
 });
 configureToggler('smooth-scroll', () => {
 	scrollDistance = scrollReference = 0;
-	chatContainer.scrollTop = Settings.get('new-messages-on-top') ? 0 : chatContainer.scrollHeight - window.innerHeight;
-	document.getElementById('settings-smooth-scroll').parentNode.nextElementSibling.classList.toggle('hidden', !Settings.get('smooth-scroll'));
+	ui.chat.container.scrollTop = Settings.get('new-messages-on-top') ? 0 : ui.chat.container.scrollHeight - window.innerHeight;
+	ui.settings.behaviour.smoothScroll.body.classList.toggle('hidden', !Settings.get('smooth-scroll'));
 });
 if (Settings.get('smooth-scroll')) {
-	document.getElementById('settings-smooth-scroll').parentNode.nextElementSibling.classList.remove('hidden');
+	ui.settings.behaviour.smoothScroll.body.classList.remove('hidden');
 }
-document.getElementById('settings-smooth-scroll-duration').value = Settings.get('smooth-scroll-duration');
-document.getElementById('settings-smooth-scroll-duration').addEventListener('input', (e) => {
+ui.settings.behaviour.smoothScroll.duration.value = Settings.get('smooth-scroll-duration');
+ui.settings.behaviour.smoothScroll.duration.addEventListener('input', (e) => {
 	var duration = parseInt(e.target.value);
 	if (!isNaN(duration) && e.target.validity.valid) {
 		Settings.set('smooth-scroll-duration', duration);
 	}
 });
 
-document.getElementById('settings-chat-delay').value = Settings.get('chat-delay');
-document.getElementById('settings-chat-delay').addEventListener('change', (e) => {
+ui.settings.behaviour.chatDelay.value = Settings.get('chat-delay');
+ui.settings.behaviour.chatDelay.addEventListener('change', (e) => {
 	Settings.set('chat-delay', e.target.value);
 	addNotice(`Artificial chat delay set to ${e.target.value} second${e.target.value == 1 ? '' : 's'}`);
 	if (e.target.value == 0) {
@@ -413,19 +492,17 @@ document.getElementById('settings-chat-delay').addEventListener('change', (e) =>
 });
 
 // Message Handling
-document.getElementById('chat').classList.toggle('align-messages', Settings.get('align-messages'));
-document.getElementById('settings-align-messages').checked = Settings.get('align-messages');
-configureToggler('align-messages', () => document.getElementById('chat').classList.toggle('align-messages', Settings.get('align-messages')));
-document.getElementById('chat').classList.toggle('show-badges', Settings.get('show-badges'));
-document.getElementById('settings-show-badges').checked = Settings.get('show-badges');
-configureToggler('show-badges', () => document.getElementById('chat').classList.toggle('show-badges', Settings.get('show-badges')));
+ui.chat.body.classList.toggle('align-messages', Settings.get('align-messages'));
+configureToggler('align-messages', () => ui.chat.body.classList.toggle('align-messages', Settings.get('align-messages')));
+ui.chat.body.classList.toggle('show-badges', Settings.get('show-badges'));
+configureToggler('show-badges', () => ui.chat.body.classList.toggle('show-badges', Settings.get('show-badges')));
 ['combine-messages', 'format-urls', 'shorten-urls', 'unfurl-youtube', 'show-subscriptions', 'show-bits', 'show-mod-actions'].forEach(configureToggler);
-configureToggler('inline-images', () => document.getElementById('settings-inline-images').parentNode.nextElementSibling.classList.toggle('hidden', !Settings.get('inline-images')));
+configureToggler('inline-images', () => ui.settings.messageHandling.inlineImages.body.classList.toggle('hidden', !Settings.get('inline-images')));
 if (Settings.get('inline-images')) {
-	document.getElementById('settings-inline-images').parentNode.nextElementSibling.classList.remove('hidden');
+	ui.settings.messageHandling.inlineImages.body.classList.remove('hidden');
 }
-document.getElementById('settings-inline-images-height').value = Settings.get('inline-images-height').slice(0, -2); // remove vh unit
-document.getElementById('settings-inline-images-height').addEventListener('input', (e) => {
+ui.settings.messageHandling.inlineImages.height.value = Settings.get('inline-images-height').slice(0, -2); // remove vh unit
+ui.settings.messageHandling.inlineImages.height.addEventListener('input', (e) => {
 	var height = parseInt(e.target.value);
 	if (!isNaN(height) && e.target.validity.valid) {
 		Settings.set('inline-images-height', height + 'vh');
@@ -443,20 +520,20 @@ if (Settings.get('unfurl-twitter')) {
 	twitterScript.src = 'https://platform.twitter.com/widgets.js';
 	document.body.appendChild(twitterScript);
 }
-document.getElementById('settings-timestamps').value = Settings.get('timestamps');
-document.getElementById('chat').classList.toggle('hide-timestamps', Settings.get('timestamps') == '');
-document.getElementById('settings-timestamps').addEventListener('change', (e) => {
+ui.settings.messageHandling.timestamps.value = Settings.get('timestamps');
+ui.chat.body.classList.toggle('hide-timestamps', Settings.get('timestamps') == '');
+ui.settings.messageHandling.timestamps.addEventListener('change', (e) => {
 	Settings.set('timestamps', e.target.value);
-	document.getElementById('chat').classList.toggle('hide-timestamps', e.target.value == '');
-	Array.from(document.querySelectorAll('#chat .timestamp')).forEach(updateTimestamp);
+	ui.chat.body.classList.toggle('hide-timestamps', e.target.value == '');
+	Array.from(ui.chat.body.querySelectorAll('.timestamp')).forEach(updateTimestamp);
 });
-document.getElementById('settings-highlight-users').value = Settings.get('highlight-users');
-document.getElementById('settings-highlight-users').addEventListener('input', (e) => {
+ui.settings.messageHandling.highlightUsers.value = Settings.get('highlight-users');
+ui.settings.messageHandling.highlightUsers.addEventListener('input', (e) => {
 	Settings.set('highlight-users', e.target.value.toLowerCase());
 	highlightUsers = e.target.value.toLowerCase().split(',').filter((user) => user != '');
 });
-document.getElementById('settings-highlight-keyphrases').value = Settings.get('highlight-keyphrases');
-document.getElementById('settings-highlight-keyphrases').addEventListener('input', (e) => {
+ui.settings.messageHandling.keyPhrases.value = Settings.get('highlight-keyphrases');
+ui.settings.messageHandling.keyPhrases.addEventListener('input', (e) => {
 	Settings.set('highlight-keyphrases', e.target.value.toLowerCase());
 	highlightKeyphrases = e.target.value.toLowerCase().split(',').filter((phrase) => phrase != '');
 });
@@ -471,16 +548,16 @@ document.body.addEventListener('keydown', (e) => {
 		return;
 	}
 	if ((e.key == 'H' || e.key == 'h') && e.shiftKey && e.ctrlKey) {
-		document.getElementById('curtain').classList.toggle('hidden');
+		ui.main.curtain.classList.toggle('hidden');
 		e.preventDefault();
 	} else if ((e.key == 'S' || e.key == 's') && e.shiftKey && e.ctrlKey) {
-		document.getElementById('settings').classList.toggle('hidden');
-		document.getElementById('settings').scrollTop = 0;
-		document.getElementById('settings-toggle').classList.toggle('open');
+		ui.settings.body.classList.toggle('hidden');
+		ui.settings.body.scrollTop = 0;
+		ui.commands.settings.classList.toggle('open');
 		e.preventDefault();
 	} else if ((e.key == 'Escape')) {
-		document.getElementById('settings').classList.add('hidden');
-		document.getElementById('settings-toggle').classList.remove('open');
+		ui.settings.body.classList.add('hidden');
+		ui.commands.settings.classList.remove('open');
 		e.preventDefault();
 	}
 });
@@ -526,13 +603,13 @@ function step(now) {
 	}
 	if (Settings.get('limit-message-rate')) {
 		if (messageQueue.length > 40) {
-			document.getElementById('chat-overload').classList.remove('hidden');
+			ui.notifications.chatOverload.body.classList.remove('hidden');
 			// Cull the queue to a reasonable length and update the counter
-			document.getElementById('chat-overload-count').textContent = parseInt(document.getElementById('chat-overload-count').textContent) + messageQueue.splice(-40).length;
+			ui.notifications.chatOverload.count.textContent = parseInt(ui.notifications.chatOverload.count.textContent) + messageQueue.splice(-40).length;
 		}
-		if (messageQueue.length < 10 && !document.getElementById('chat-overload').classList.contains('hidden')) {
-			document.getElementById('chat-overload').classList.add('hidden');
-			document.getElementById('chat-overload-count').textContent = "0";
+		if (messageQueue.length < 10 && !ui.notifications.chatOverload.body.classList.contains('hidden')) {
+			ui.notifications.chatOverload.body.classList.add('hidden');
+			ui.notifications.chatOverload.count.textContent = "0";
 		}
 		if (messageQueue.length > 0 && now - lastMessageTimestamp > 1000 / Settings.get('message-rate')) {
 			processChat.apply(this, messageQueue.shift());
@@ -544,7 +621,7 @@ function step(now) {
 		var currentStep = Settings.get('smooth-scroll-duration') / (now - lastFrame);
 		scrollDistance -= scrollReference / currentStep;
 		scrollDistance = Math.max(scrollDistance, 0);
-		chatContainer.scrollTop = Math.round(Settings.get('new-messages-on-top') ? scrollDistance : chatContainer.scrollHeight - window.innerHeight - scrollDistance);
+		ui.chat.container.scrollTop = Math.round(Settings.get('new-messages-on-top') ? scrollDistance : ui.chat.container.scrollHeight - window.innerHeight - scrollDistance);
 	}
 	lastFrame = now;
 	window.requestAnimationFrame(step);
@@ -576,7 +653,7 @@ function processChat(channel, userstate, message) {
 				matchedMessage.appendChild(counterContainer);
 				matchedMessage.counter = counter;
 			}
-			chat.appendChild(matchedMessage);
+			ui.chat.body.appendChild(matchedMessage);
 			matchedMessage.querySelector('.counter').classList.add('bump');
 			matchedMessage.counter.textContent++;
 			setTimeout(() => matchedMessage.querySelector('.counter').classList.remove('bump'), 150);
@@ -731,12 +808,12 @@ function handleModAction(action, username, duration, userstate) {
 			addNotice(`${username} has been banned.`);
 		}
 	}
-	Array.from(document.querySelectorAll(`#chat span[data-user="${userstate["target-user-id"]}"]`)).map(message => message.id).forEach(deleteMessage);
+	Array.from(ui.chat.body.querySelectorAll(`span[data-user="${userstate["target-user-id"]}"]`)).map(message => message.id).forEach(deleteMessage);
 }
 
 function handleFPS(enable) {
-	document.getElementById('fps').innerHTML = '&nbsp;';
-	document.getElementById('fps').classList.toggle('hidden', !enable);
+	ui.main.fps.innerHTML = '&nbsp;';
+	ui.main.fps.classList.toggle('hidden', !enable);
 	lastFrameReset = Date.now();
 	frames = 0;
 	if (enable) {
@@ -748,7 +825,7 @@ function handleFPS(enable) {
 
 function updateFPS() {
 	var currentFrameTime = Date.now();
-	document.getElementById('fps').textContent = (frames / (currentFrameTime - lastFrameReset) * 1000).toFixed(1);
+	ui.main.fps.textContent = (frames / (currentFrameTime - lastFrameReset) * 1000).toFixed(1);
 	lastFrameReset = currentFrameTime;
 	frames = 0;
 }
@@ -832,18 +909,18 @@ function addMessage(chatLine, bypass) {
 		delayQueue.push(chatLine);
 		return;
 	}
-	chat.appendChild(chatLine);
+	ui.chat.body.appendChild(chatLine);
 	// Calculate height for smooth scrolling
 	scrollReference = scrollDistance += chatLine.scrollHeight;
 	if (!Settings.get('new-messages-on-top') && !Settings.get('smooth-scroll')) {
-		chatContainer.scrollTop = chatContainer.scrollHeight - window.innerHeight;
+		ui.chat.container.scrollTop = ui.chat.container.scrollHeight - window.innerHeight;
 	}
 
 	// Check whether we can remove some of the oldest messages
-	while (chat.childNodes.length > 2 && chat.scrollHeight - (window.innerHeight + (Settings.get('smooth-scroll') ? scrollDistance : 0)) > chat.firstChild.scrollHeight + chat.childNodes[1].scrollHeight) {
+	while (chat.childNodes.length > 2 && ui.chat.body.scrollHeight - (window.innerHeight + (Settings.get('smooth-scroll') ? scrollDistance : 0)) > ui.chat.body.firstChild.scrollHeight + ui.chat.body.childNodes[1].scrollHeight) {
 		// Always remove two elements at the same time to prevent switching the odd and even rows
-		chat.firstChild.remove();
-		chat.firstChild.remove();
+		ui.chat.body.firstChild.remove();
+		ui.chat.body.firstChild.remove();
 	}
 }
 
@@ -977,7 +1054,7 @@ function flushDelayQueue() {
 function createStylePreview(style) {
 	var styleContainer = document.createElement('div');
 	styleContainer.className = 'style-preview';
-	var stylePreview = document.getElementById('style-template').cloneNode(true);
+	var stylePreview = ui.settings.style.custom.preview.cloneNode(true);
 	stylePreview.removeAttribute('id');
 	stylePreview.classList.remove('hidden');
 	if (style.name == Settings.get('style-preset')) {
@@ -990,11 +1067,11 @@ function createStylePreview(style) {
 		});
 	}
 	styleContainer.addEventListener('click', () => {
-		Array.from(document.querySelectorAll('#styles .style-preview')).forEach(preview => preview.classList.remove('active'));
+		Array.from(ui.settings.style.custom.container.querySelectorAll('.style-preview')).forEach(preview => preview.classList.remove('active'));
 		styleContainer.classList.add('active');
 		Settings.set('style-preset', style.name);
-		document.getElementById('settings-custom-style').classList.toggle('hidden', style.name != 'custom');
-		document.getElementById('settings-custom-style-exchange').classList.toggle('hidden', style.name != 'custom');
+		ui.settings.style.custom.selector.classList.toggle('hidden', style.name != 'custom');
+		ui.settings.style.custom.exchange.classList.toggle('hidden', style.name != 'custom');
 		Object.keys(style).filter(key => key != 'name').forEach(key => {
 			document.body.style.setProperty(`--${key}-color`, (style.name == 'custom' ? Settings.get(`${key}-color`) : style[key]));
 			if (['channel', 'notice', 'highlight'].indexOf(key) != -1) {
@@ -1006,7 +1083,7 @@ function createStylePreview(style) {
 	['channel', 'notice', 'highlight'].forEach(key => stylePreview.style.setProperty(`--style-${key}-background`, style[key] + '50'));
 	styleContainer.textContent = style.name;
 	styleContainer.appendChild(stylePreview);
-	document.getElementById('styles').appendChild(styleContainer);
+	ui.settings.style.custom.container.appendChild(styleContainer);
 	return stylePreview;
 }
 
@@ -1025,7 +1102,7 @@ function updateTimestamp(field) {
 function updateImportExport() {
 	var code = '';
 	colorFields.forEach(key => code += HexCompressor.color2string(Settings.get(key + '-color')));
-	document.getElementById('settings-custom-style-exchange-field').value = code;
+	ui.settings.style.custom.field.value = code;
 }
 
 function ensureHash(text) {
