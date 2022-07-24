@@ -3,7 +3,6 @@ var chat = document.getElementById('chat'),
 	scrollDistance = 0, // How many pixels are we currently still hiding?
 	scrollReference = 0, // Distance when we started scrolling
 	imageExtensions = ['.jpg', '.jpeg', '.gif', '.png', '.webp', '.av1'],
-	roomstate = {},
 	bitLevels = [ 10000, 1000, 500, 100, 1 ],
 	frames = 0,
 	fpsInterval,
@@ -637,25 +636,22 @@ function processChat(channel, userstate, message) {
 }
 
 function handleRoomstate(channel, state) {
-	if (roomstate.channel != channel) {
-		Badges.load(state['room-id']);
-		flushDelayQueue();
-		flushMessageQueue();
-		addNotice(`Joined ${channel}.`);
-		if (state.slow) {
-			addNotice(`Channel is in slow mode.`);
-		}
-		if (state['followers-only'] != -1) {
-			addNotice(`Channel is in followers-only mode.`);
-		}
-		if (state['emote-only']) {
-			addNotice(`Channel is in emote-only mode.`);
-		}
-		if (Settings.get('chat-delay') != 0) {
-			addNotice(`Chat is set to an artificial delay of ${Settings.get('chat-delay')} second${Settings.get('chat-delay') == 1 ? '' : 's'}.`);
-		}
+	Badges.load(state['room-id']);
+	flushDelayQueue();
+	flushMessageQueue();
+	addNotice(`Joined ${channel}.`);
+	if (state.slow) {
+		addNotice(`Channel is in slow mode.`);
 	}
-	roomstate = state;
+	if (state['followers-only'] != -1) {
+		addNotice(`Channel is in followers-only mode.`);
+	}
+	if (state['emote-only']) {
+		addNotice(`Channel is in emote-only mode.`);
+	}
+	if (Settings.get('chat-delay') != 0) {
+		addNotice(`Chat is set to an artificial delay of ${Settings.get('chat-delay')} second${Settings.get('chat-delay') == 1 ? '' : 's'}.`);
+	}
 }
 
 function handleSubscription(username, message, userstate) {
