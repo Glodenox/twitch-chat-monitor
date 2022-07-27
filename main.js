@@ -111,7 +111,7 @@ var ui = {
 	},
 	messageEntry: {
 		body: document.getElementById('message-entry'),
-		username:  document.getElementById('message-username'),
+		username: document.getElementById('message-username'),
 		field: document.querySelector('#message-entry .message-field')
 	},
 	settings: {
@@ -263,7 +263,7 @@ if (Settings.get('identity')) {
 	identity.body.classList.remove('disabled');
 	identity.toggle.classList.remove('disabled');
 	identity.toggle.disabled = false;
-	identity.username.textContent = Settings.get('identity').username;
+	ui.messageEntry.username.textContent = Settings.get('identity').username;
 	document.body.classList.toggle('show-message-entry', Settings.get('twitch-messagefield'));
 }
 configureToggler('twitch-messagefield', () => {
