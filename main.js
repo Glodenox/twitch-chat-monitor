@@ -8,7 +8,8 @@ var scrollDistance = 0, // How many pixels are we currently still hiding?
 	lastMoveTimeoutId = null,
 	messageQueue = [],
 	delayQueue = [],
-	lastMessageTimestamp = 0;
+	lastMessageTimestamp = 0,
+	unreadMessages = 0;
 
 
 /** Store settings with a local cache. Storing these variables directly in localStorage would remove the variable's type information **/
@@ -136,7 +137,8 @@ var ui = {
 			},
 			fontSize: document.getElementById('settings-font-size'),
 			hideCursor: document.getElementById('settings-hide-cursor'),
-			adjustTitle: document.getElementById('settings-adjust-page-title')
+			adjustTitle: document.getElementById('settings-adjust-page-title'),
+			showUnreadInTitle: document.getElementById('settings-unread-counter-in-page-title')
 		},
 		behaviour: {
 			limitRate: {
@@ -438,13 +440,11 @@ document.addEventListener('mousemove', () => {
 });
 
 ui.settings.style.adjustTitle.checked = Settings.get('adjust-page-title');
-configureToggler('adjust-page-title', () => {
-	if (!Settings.get('adjust-page-title')) {
-		document.title = 'Chat Monitor';
-	} else {
-		document.title = ensureHash(Settings.get('channel')) + ' - Chat Monitor';
-	}
-});
+configureToggler('adjust-page-title', updateTitle);
+ui.settings.style.showUnreadInTitle.checked = Settings.get('unread-counter-in-page-title');
+configureToggler('unread-counter-in-page-title');
+// Monitor unread messages
+document.addEventListener('visibilitychange', updateUnreadCounter);
 
 // Chat Behavior
 document.body.classList.toggle('limit-message-rate', !Settings.get('limit-message-rate'));
@@ -566,15 +566,11 @@ document.body.addEventListener('keydown', (e) => {
 function joinChannel(channel) {
 	client.join(ensureHash(channel)).then(() => {
 		console.log('Joined channel ' + channel);
-		if (Settings.get('adjust-page-title')) {
-			document.title = ensureHash(channel) + ' - Chat Monitor';
-		}
+		updateTitle()
 	}, (error) => {
 		addNotice(`Failed to join requested channel. Reason: ${decodeMessageId(error)}`);
 		console.error('Failed to join requested channel', error);
-		if (Settings.get('adjust-page-title')) {
-			document.title = 'Chat Monitor';
-		}
+		updateTitle();
 	});
 }
 
@@ -631,6 +627,7 @@ window.requestAnimationFrame(step);
 
 /** Chat event handling **/
 function handleChat(channel, userstate, message) {
+	increaseUnreadCounter();
 	if (Settings.get('limit-message-rate')) {
 		messageQueue.push([ channel, userstate, message ]);
 	} else {
@@ -1112,6 +1109,31 @@ function updateImportExport() {
 	var code = '';
 	colorFields.forEach(key => code += HexCompressor.color2string(Settings.get(key + '-color')));
 	ui.settings.style.custom.field.value = code;
+}
+
+function updateTitle() {
+	var pageTitle = 'Twitch Chat Monitor';
+	if (Settings.get('adjust-page-title')) {
+		pageTitle = ensureHash(client.channels[0]) + ' - ' + pageTitle;
+	}
+	if (Settings.get('unread-counter-in-page-title') && unreadMessages > 0) {
+		pageTitle = '(' + (unreadMessages > 99 ? '99+' : unreadMessages) + ') ' + pageTitle;
+	}
+	document.title = pageTitle;
+}
+
+function increaseUnreadCounter() {
+	if (document.visibilityState == 'hidden') {
+		unreadMessages++;
+		updateTitle();
+	}
+}
+
+function updateUnreadCounter() {
+	if (document.visibilityState == 'visible') {
+		unreadMessages = 0;
+		updateTitle();
+	}
 }
 
 function ensureHash(text) {
