@@ -1,4 +1,4 @@
 # ignore readme and images from the generated release archives
 .git*           export-ignore
 README.md       export-ignore
-img             export-ignore
+img/example.png export-ignore
