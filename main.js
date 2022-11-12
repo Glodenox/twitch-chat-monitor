@@ -118,6 +118,7 @@ var ui = {
 		body: document.getElementById('settings'),
 		twitch: {
 			channel: document.getElementById('settings-channel'),
+			channelOverride: document.getElementById('settings-channel-override'),
 			identity: {
 				toggle: document.getElementById('settings-twitch-messagefield'),
 				body: document.getElementById('settings-twitch-messaging'),
@@ -210,7 +211,12 @@ client.on('connected', () => {
 });
 client.connect().then(() => {
 	let channelFromPath = (document.location.href.match(/channel=([A-Za-z0-9_]+)/) || [null])[1];
-	joinChannel(channelFromPath || Settings.get('channel'));
+	if (channelFromPath) {
+		joinChannel(channelFromPath);
+		ui.settings.twitch.channelOverride.classList.remove('hidden');
+	} else {
+		joinChannel(Settings.get('channel'));
+	}
 });
 
 /** Interface interactions **/
@@ -219,7 +225,7 @@ ui.messageEntry.body.addEventListener('submit', (e) => {
 	let field = ui.messageEntry.field;
 	if (field.value.trim().length > 0) {
 		field.disabled = true;
-		client.say(Settings.get('channel'), field.value.trim()).then(() => {
+		client.say(client.channels[0], field.value.trim()).then(() => {
 			field.value = '';
 			field.disabled = false;
 			field.focus();
@@ -253,6 +259,7 @@ ui.settings.twitch.channel.form.addEventListener('submit', (e) => {
 		ui.chat.body.querySelectorAll('div').forEach((msg) => msg.style.opacity = 0.5);
 		Settings.set('channel', channel);
 		joinChannel(channel);
+		ui.settings.twitch.channelOverride.classList.add('hidden');
 	}
 	e.preventDefault();
 });
@@ -868,7 +875,7 @@ function createChatLine(userstate, message) {
 		chatName.classList.add('action');
 	}
 	chatName.textContent = userstate['display-name'] || userstate.username;
-	if (chatName.textContent.toLowerCase() == removeHash(Settings.get('channel')).toLowerCase()) {
+	if (chatName.textContent.toLowerCase() == removeHash(client.channels[0]).toLowerCase()) {
 		chatLine.className = 'highlight channel';
 	}
 	chatMessage.innerHTML = formatMessage(message, userstate.emotes);

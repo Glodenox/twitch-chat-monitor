@@ -26,7 +26,13 @@
     <div id="settings" class="hidden">
       <div>
         <h3>Twitch</h3>
-        <div><form action="#"><label>Twitch channel: <input type="text" id="settings-channel" required="required" placeholder="Name only (e.g. desertbus)" size="26"/></label> <input type="submit" value="Join"/></form></div>
+        <div>
+          <form action="#">
+            <label>Twitch channel: <input type="text" id="settings-channel" required="required" placeholder="Name only (e.g. desertbus)" size="26"/></label>
+            <input type="submit" value="Join"/>
+            <span id="settings-channel-override" class="hidden">(Currently overridden by channel parameter in URL)</span>
+          </form>
+        </div>
         <div><label class="disabled" id="settings-twitch-messaging"><input type="checkbox" id="settings-twitch-messagefield" disabled="disabled"/> Support sending messages</label>
           <span class="help" title="More information" data-title="Show a text box that allows sending messages from the monitor. Requires the addition of an access token to work."></span>
           <div class="subfield">
