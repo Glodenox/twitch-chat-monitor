@@ -483,13 +483,7 @@ ui.settings.behaviour.smoothScroll.duration.addEventListener('input', (e) => {
 });
 
 ui.settings.behaviour.chatDelay.value = Settings.get('chat-delay');
-ui.settings.behaviour.chatDelay.addEventListener('change', (e) => {
-	Settings.set('chat-delay', e.target.value);
-	addNotice(`Artificial chat delay set to ${e.target.value} second${e.target.value == 1 ? '' : 's'}`);
-	if (e.target.value == 0) {
-		flushDelayQueue();
-	}
-});
+ui.settings.behaviour.chatDelay.addEventListener('change', (e) => setChatDelay(e.target.value));
 
 // Message Handling
 ui.chat.body.classList.toggle('align-messages', Settings.get('align-messages'));
@@ -1097,6 +1091,14 @@ function updateTimestamp(field) {
 		'': () => {}
 	};
 	field.textContent = formats[Settings.get('timestamps')](parseInt(field.dataset.timestamp));
+}
+
+function setChatDelay(delay) {
+	Settings.set('chat-delay', delay);
+	addNotice(`Artificial chat delay set to ${delay} second${delay == 1 ? '' : 's'}`);
+	if (delay == 0) {
+		flushDelayQueue();
+	}
 }
 
 function updateImportExport() {
