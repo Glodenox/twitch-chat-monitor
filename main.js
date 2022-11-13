@@ -191,6 +191,7 @@ client.on('resub', (channel, username, months, message, userstate, methods) => h
 client.on('submysterygift', (channel, username, numbOfSubs, methods, userstate) => handleSubscription(username, null, userstate));
 client.on('cheer', handleCheer);
 client.on('raided', (channel, username, viewers) => addNotice(`${username} raided the channel with ${viewers} viewers!`));
+client.on('usernotice', (msgid, channel, userstate, message) => handleChat(channel, userstate, message));
 client.on('slowmode', (channel, enabled, length) => addNotice(`Slowmode chat has been ${enabled ? 'activated' : 'deactivated'}.`));
 client.on('followersonly', (channel, enabled, length) => addNotice(`Followers-only chat has been ${enabled ? 'activated' : 'deactivated'}.`));
 client.on('emoteonly', (channel, enabled) => addNotice(`Emote-only chat has been ${enabled ? 'activated' : 'deactivated'}.`));
@@ -872,6 +873,9 @@ function createChatLine(userstate, message) {
 		chatName.classList.add('action');
 	}
 	chatName.textContent = userstate['display-name'] || userstate.username;
+	if (userstate['message-type'] == 'announcement') {
+		chatName.textContent = '📢 ' + chatName.textContent;
+	}
 	if (chatName.textContent.toLowerCase() == removeHash(client.channels[0]).toLowerCase()) {
 		chatLine.className = 'highlight channel';
 	}
