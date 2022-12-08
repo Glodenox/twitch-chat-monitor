@@ -401,8 +401,11 @@ body.reverse-order #settings {
   border: 2px solid #eee;
   border-color: var(--text-color);
   text-align: center;
+  padding-top: 2px;
   width: 32px;
+  width: calc(var(--font-size) + 4px);
   height: 32px;
+  height: calc(var(--font-size) + 4px);
   cursor: pointer;
 }
 
