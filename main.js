@@ -151,7 +151,11 @@ var ui = {
 				body: document.getElementById('settings-smooth-scroll').parentNode.nextElementSibling,
 				duration: document.getElementById('settings-smooth-scroll-duration')
 			},
-			chatDelay: document.getElementById('settings-chat-delay')
+			chatDelay: {
+				toggle: document.getElementById('settings-enable-chat-delay'),
+				body: document.getElementById('settings-chat-delay').parentNode.parentNode,
+				delay: document.getElementById('settings-chat-delay')
+			}
 		},
 		messageHandling: {
 			inlineImages: {
@@ -490,8 +494,15 @@ ui.settings.behaviour.smoothScroll.duration.addEventListener('input', (e) => {
 	}
 });
 
-ui.settings.behaviour.chatDelay.value = Settings.get('chat-delay');
-ui.settings.behaviour.chatDelay.addEventListener('change', (e) => setChatDelay(e.target.value));
+configureToggler('enable-chat-delay', () => {
+	toggleChatDelay();
+	ui.settings.behaviour.chatDelay.body.classList.toggle('hidden', !Settings.get('enable-chat-delay'));
+});
+if (Settings.get('enable-chat-delay')) {
+	ui.settings.behaviour.chatDelay.body.classList.remove('hidden');
+}
+ui.settings.behaviour.chatDelay.delay.value = Settings.get('chat-delay');
+ui.settings.behaviour.chatDelay.delay.addEventListener('change', (e) => setChatDelay(e.target.value));
 
 // Message Handling
 ui.chat.body.classList.toggle('align-messages', Settings.get('align-messages'));
@@ -552,6 +563,12 @@ document.body.addEventListener('keydown', (e) => {
 	if ((e.key == 'H' || e.key == 'h') && e.shiftKey && e.ctrlKey) {
 		ui.main.curtain.classList.toggle('hidden');
 		e.preventDefault();
+	} else if ((e.key == 'D' || e.key == 'd') && e.shiftKey && e.ctrlKey) {
+		Settings.toggle('enable-chat-delay');
+		ui.settings.behaviour.chatDelay.toggle.checked = !ui.settings.behaviour.chatDelay.toggle.checked;
+		ui.settings.behaviour.chatDelay.body.classList.toggle('hidden');
+		toggleChatDelay();
+		e.preventDefault();
 	} else if ((e.key == 'S' || e.key == 's') && e.shiftKey && e.ctrlKey) {
 		ui.settings.body.classList.toggle('hidden');
 		ui.settings.body.scrollTop = 0;
@@ -594,7 +611,7 @@ function step(now) {
 	if (Settings.get('show-fps')) {
 		frames++;
 	}
-	if (Settings.get('chat-delay') != 0) {
+	if (Settings.get('enable-chat-delay') && Settings.get('chat-delay') != 0) {
 		while (delayQueue.length > 0 && parseInt(delayQueue[0].dataset.timestamp) + (Settings.get('chat-delay') * 1000) < Date.now()) {
 			addMessage(delayQueue.shift(), true);
 		}
@@ -749,7 +766,7 @@ function handleRoomstate(channel, state) {
 	if (state['emote-only']) {
 		addNotice(`Channel is in emote-only mode.`);
 	}
-	if (Settings.get('chat-delay') != 0) {
+	if (Settings.get('enable-chat-delay') && Settings.get('chat-delay') != 0) {
 		addNotice(`Chat is set to an artificial delay of ${Settings.get('chat-delay')} second${Settings.get('chat-delay') == 1 ? '' : 's'}.`);
 	}
 }
@@ -906,7 +923,7 @@ function addNotice(message) {
 }
 
 function addMessage(chatLine, bypass) {
-	if (chatLine.className != 'notice' && !bypass && Settings.get('chat-delay') != 0) {
+	if (chatLine.className != 'notice' && !bypass && Settings.get('enable-chat-delay') && Settings.get('chat-delay') != 0) {
 		chatLine.dataset.timestamp = Date.now();
 		delayQueue.push(chatLine);
 		return;
@@ -1099,6 +1116,16 @@ function updateTimestamp(field) {
 		'': () => {}
 	};
 	field.textContent = formats[Settings.get('timestamps')](parseInt(field.dataset.timestamp));
+}
+
+function toggleChatDelay() {
+	if (Settings.get('enable-chat-delay')) {
+		let delay = Settings.get('chat-delay');
+		addNotice(`Artificial chat delay set to ${delay} second${delay == 1 ? '' : 's'}`);
+	} else {
+		addNotice('Artificial chat delay disabled');
+		flushDelayQueue();
+	}
 }
 
 function setChatDelay(delay) {

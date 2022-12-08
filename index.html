@@ -82,7 +82,12 @@
           <label><input type="checkbox" id="settings-combine-messages"/> Combine messages with the same content</label>
           <span class="help" title="More information" data-title="The previous chat message will show an increasing counter for each match and will be moved to the front of the chat again."></span>
         </div>
-        <div><label>Artificial chat delay: <input type="number" size="4" max="1000" min="0" id="settings-chat-delay"/> seconds</label></div>
+        <div>
+          <label><input type="checkbox" id="settings-enable-chat-delay"/> Artificial chat delay</label>
+          <div class="subfield hidden">
+            <label>Delay: <input type="number" size="4" max="1000" min="0" id="settings-chat-delay"/> seconds</label>
+          </div>
+        </div>
       </div>
       <div>
         <h3>Message Handling</h3>
@@ -139,6 +144,7 @@
         <div class="fields centered">
           <div>Ctrl+Shift+H<br/>Hide/show chat</div>
           <div>Ctrl+Shift+S<br/>Open/close settings</div>
+          <div>Ctrl+Shift+D<br/>Toggle artificial chat delay</div>
           <div>F11<br/>Toggle fullscreen</div>
         </div>
       </div>
@@ -210,7 +216,8 @@ var defaultSettings = {
   'smooth-scroll': true,
   'smooth-scroll-duration': 1000,  // Time in milliseconds allowed for a message to appear
   'combine-messages': false,
-  'chat-delay': 0,
+  'enable-chat-delay': false,
+  'chat-delay': 20,
   'show-badges': false,
   'format-urls': true,
   'shorten-urls': true,
