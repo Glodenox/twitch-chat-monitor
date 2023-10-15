@@ -180,28 +180,6 @@ body.reverse-order #chat {
   color: yellow;
 }
 
-#chat:not(.show-badges) .badges {
-  display: none;
-}
-
-#chat img.emoticon, #chat .badges img {
-  height: calc(var(--font-size) - 2px);
-  object-fit: contain;
-  vertical-align: bottom;
-}
-
-#chat.align-messages .badges {
-  flex-basis: calc(var(--font-size) * 3 + 4px);
-  flex-shrink: 0;
-}
-
-#chat .badges img {
-  margin-right: 5px;
-}
-#chat.align-messages .badges img:last-child {
-  margin-right: 0;
-}
-
 #chat .counter {
   font-weight: bold;
   float: right;
