@@ -342,7 +342,10 @@ if (document.fullscreenEnabled && Settings.get('support-fullscreen')) {
 		'moderator': "#8383f9",
 		'channel': "#0d86ff",
 		'notice': "#eeeeee",
-		'highlight': "#731180"
+		'highlight': "#731180",
+		'vip': '#4686f8',
+		'admin': '#a970ff',
+		'staff': '#a970ff'
 	}, {
 		'name': "bright",
 		'background': "#eeeeee",
@@ -353,7 +356,10 @@ if (document.fullscreenEnabled && Settings.get('support-fullscreen')) {
 		'moderator': "#8383f9",
 		'channel': "#0d86ff",
 		'notice': "#111111",
-		'highlight': "#731180"
+		'highlight': "#731180",
+		'vip': '#4686f8',
+		'admin': '#a970ff',
+		'staff': '#a970ff'
 	}, {
 		'name': 'LRR',
 		'background': "#202020",
@@ -364,10 +370,13 @@ if (document.fullscreenEnabled && Settings.get('support-fullscreen')) {
 		'moderator': "#f15a24",
 		'channel': "#f15a24",
 		'notice': "#d2d2d2",
-		'highlight': "#e1480f"
+		'highlight': "#e1480f",
+		'vip': '#aaf2a6',
+		'admin': '#a970ff',
+		'staff': '#a970ff'
 	}
 ].forEach(createStylePreview);
-var colorFields = ['background', 'odd-background', 'separator', 'text', 'user', 'moderator', 'channel', 'notice', 'highlight'];
+var colorFields = ['background', 'odd-background', 'separator', 'text', 'user', 'moderator', 'channel', 'notice', 'highlight', 'vip', 'admin', 'staff'];
 var customStyleValues = {
 	'name': "custom"
 };
@@ -838,6 +847,15 @@ function createChatLine(userstate, message) {
 	updateTimestamp(chatTimestamp);
 	chatLine.appendChild(chatTimestamp);
 	chatName.className = 'chat-user';
+	if (userstate.badges?.vip) {
+		chatName.classList.add('vip');
+	}
+	if (userstate.badges?.admin) {
+		chatName.classList.add('admin');
+	}
+	if (userstate.badges?.staff) {
+		chatName.classList.add('staff');
+	}
 	if (userstate.mod) {
 		chatName.classList.add('moderator');
 	}

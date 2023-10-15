@@ -104,6 +104,21 @@ body.reverse-order #chat {
   font-weight: 700;
 }
 
+#chat .chat-user.vip {
+  color: #4686f8;
+  color: var(--vip-color);
+}
+
+#chat .chat-user.admin {
+  color: #a970ff;
+  color: var(--admin-color);
+}
+
+#chat .chat-user.staff {
+  color: #a970ff;
+  color: var(--staff-color);
+}
+
 #chat .chat-user.moderator {
   color: #8383f9;
   color: var(--moderator-color);
