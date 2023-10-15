@@ -395,14 +395,19 @@ colorFields.forEach(key => {
 });
 updateImportExport();
 ui.settings.style.custom.field.addEventListener('input', (e) => {
-	if (!/^[0-9a-zA-Z+#]{36}$/.test(e.target.value)) {
+	let code = e.target.value;
+	if (code.length == 36) { // Allow old exports to work
+		code += ['vip', 'admin', 'staff'].map((name) => HexCompressor.color2string(Settings.get(`${name}-color`))).join('');
+		console.log(code);
+	}
+	if (!/^[0-9a-zA-Z+#]{48}$/.test(code)) {
 		e.target.setCustomValidity('Invalid code');
 		e.target.reportValidity();
 		return;
 	}
 	e.target.setCustomValidity('');
 	colorFields.forEach((key, index) => {
-		var newColor = HexCompressor.string2color(e.target.value.substr(index * 4, 4));
+		var newColor = HexCompressor.string2color(code.substring(index * 4, (index * 4) + 4));
 		Settings.set(key + '-color', newColor);
 		document.getElementById('settings-' + key + '-color').value = newColor;
 	});
