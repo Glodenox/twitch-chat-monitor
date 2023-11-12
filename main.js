@@ -398,7 +398,6 @@ ui.settings.style.custom.field.addEventListener('input', (e) => {
 	let code = e.target.value;
 	if (code.length == 36) { // Allow old exports to work
 		code += ['vip', 'admin', 'staff'].map((name) => HexCompressor.color2string(Settings.get(`${name}-color`))).join('');
-		console.log(code);
 	}
 	if (!/^[0-9a-zA-Z+#]{48}$/.test(code)) {
 		e.target.setCustomValidity('Invalid code');
@@ -908,7 +907,7 @@ function addMessage(chatLine, bypass) {
 	}
 	ui.chat.body.appendChild(chatLine);
 	// Calculate height for smooth scrolling
-	scrollReference = scrollDistance += Math.max(chatLine.scrollHeight, parseInt(Settings.get('font-size')) + 7); // 2 x 3px padding + 1px border = 7
+	scrollReference = scrollDistance += chatLine.scrollHeight;
 	if (!Settings.get('new-messages-on-top') && !Settings.get('smooth-scroll')) {
 		ui.chat.container.scrollTop = ui.chat.container.scrollHeight - window.innerHeight;
 	}
@@ -962,8 +961,9 @@ function formatEmotes(text, emotes) {
 		emotes[id].forEach((range) => {
 			if (typeof range == 'string') {
 				range = range.split('-').map(index => parseInt(index));
-				var emote = text.slice(range[0], range[1] + 1).join('');
-				replaceText(text, `<img class="emoticon" src="https://static-cdn.jtvnw.net/emoticons/v2/${id}/default/dark/1.0" srcset="https://static-cdn.jtvnw.net/emoticons/v2/${id}/default/dark/1.0 1x,https://static-cdn.jtvnw.net/emoticons/v2/${id}/default/dark/2.0 2x,https://static-cdn.jtvnw.net/emoticons/v2/${id}/default/dark/3.0 4x" alt="${emote}" title="${emote}" />`, range[0], range[1]);
+				let emote = text.slice(range[0], range[1] + 1).join('');
+				let baseUrl = `https://static-cdn.jtvnw.net/emoticons/v2/${id}/default/dark`;
+				replaceText(text, `<div class="emoticon" style="background-image: url('${baseUrl}/1.0'); background-image: image-set(url('${baseUrl}/1.0') 1x,url('${baseUrl}/2.0') 2x,url('${baseUrl}/3.0') 4x" alt="${emote}" title="${emote}"></div>`, range[0], range[1]);
 			}
 		});
 	};

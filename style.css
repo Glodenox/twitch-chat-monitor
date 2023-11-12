@@ -56,6 +56,15 @@ body.reverse-order #chat {
   margin-right: 5px;
 }
 
+#chat div.emoticon {
+  display: inline-block;
+  height: 28px;
+  width: 28px;
+  background-repeat: no-repeat;
+  background-position: center;
+  vertical-align: middle;
+}
+
 #chat img {
   max-width: 100%;
   max-height: 50vh;
