@@ -473,6 +473,7 @@ body.reverse-order #settings {
   display: flex;
   align-items: center;
   justify-content: center;
+  text-align: center;
 }
 
 body.show-message-entry:not(.reverse-order) #commands {
