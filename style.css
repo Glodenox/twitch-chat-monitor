@@ -474,6 +474,16 @@ body.reverse-order #settings {
   align-items: center;
   justify-content: center;
   text-align: center;
+  opacity: 1;
+  animation: curtain 1s;
+}
+#curtain.hidden {
+  opacity: 0;
+}
+
+@keyframes curtain {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 body.show-message-entry:not(.reverse-order) #commands {
