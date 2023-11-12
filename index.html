@@ -63,6 +63,13 @@
         <div><label><input type="checkbox" id="settings-adjust-page-title"/> Show channel name in page title</label></div>
         <div><label><input type="checkbox" id="settings-unread-counter-in-page-title"/> Show unread messages counter in page title</label></div>
         <div><label>Font size: <input type="number" size="3" max="200" min="4" id="settings-font-size"/> pixels</label></div>
+        <div><label>Animate emoji: 
+          <select id="settings-animate-emoji">
+            <option value="yes">Always animate</option>
+            <!--<option value="auto">Based on system performance</option>-->
+            <option value="no">Never animate</option>
+          </select></label>
+        </div>
       </div>
       <div>
         <h3>Chat Behavior</h3>
@@ -255,7 +262,8 @@ var defaultSettings = {
   'show-fps': false,
   'support-fullscreen': false,
   'support-hotkeys': true,
-  'show-command-buttons': true
+  'show-command-buttons': true,
+  'animate-emoji': 'yes'
 };
     </script>
     <script src="main.js"></script>

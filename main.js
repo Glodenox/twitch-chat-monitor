@@ -109,7 +109,8 @@ var ui = {
 			fontSize: document.getElementById('settings-font-size'),
 			hideCursor: document.getElementById('settings-hide-cursor'),
 			adjustTitle: document.getElementById('settings-adjust-page-title'),
-			showUnreadInTitle: document.getElementById('settings-unread-counter-in-page-title')
+			showUnreadInTitle: document.getElementById('settings-unread-counter-in-page-title'),
+			animateEmoji : document.getElementById('settings-animate-emoji')
 		},
 		behaviour: {
 			limitRate: {
@@ -416,6 +417,14 @@ ui.settings.style.custom.exchange.classList.toggle('hidden', Settings.get('style
 
 ui.settings.style.fontSize.value = Settings.get('font-size').slice(0, -2); // remove pixel unit
 ui.settings.style.fontSize.addEventListener('change', (e) => Settings.set('font-size', e.target.value + 'px'));
+
+ui.settings.style.animateEmoji.value = Settings.get('animate-emoji');
+ui.settings.style.animateEmoji.addEventListener('change', (e) => {
+	Settings.set('animate-emoji', e.target.value);
+	if (e.target.value != 'auto') { // Adjust existing emoji for existing emoji if forced enabled or disabled
+		Array.from(ui.chat.body.querySelectorAll('div.emoticon')).forEach(updateEmoji);
+	}
+});
 
 document.body.classList.toggle('hide-cursor', Settings.get('hide-cursor'));
 ui.settings.style.hideCursor.checked = Settings.get('hide-cursor');
@@ -783,7 +792,8 @@ function handleCheer(channel, userstate, message) {
 			console.warn(`Could not parse bits received from ${userstate.username}`, userstate.bits);
 			return;
 		}
-		cheerIcon.src = `https://static-cdn.jtvnw.net/bits/dark/animated/${bitLevel}/1.5.gif`;
+		let imageStyle = Settings.get('animate-emoji') == 'yes' ? 'animated' : 'static'; // TODO: support 'auto'
+		cheerIcon.src = `https://static-cdn.jtvnw.net/bits/dark/${imageStyle}/${bitLevel}/1.5.gif`;
 		cheerIcon.alt = 'Bits';
 		cheer.appendChild(cheerIcon);
 		cheer.className = `cheer cheer-${bitLevel}`;
@@ -962,8 +972,9 @@ function formatEmotes(text, emotes) {
 			if (typeof range == 'string') {
 				range = range.split('-').map(index => parseInt(index));
 				let emote = text.slice(range[0], range[1] + 1).join('');
-				let baseUrl = `https://static-cdn.jtvnw.net/emoticons/v2/${id}/default/dark`;
-				replaceText(text, `<div class="emoticon" style="background-image: url('${baseUrl}/1.0'); background-image: image-set(url('${baseUrl}/1.0') 1x,url('${baseUrl}/2.0') 2x,url('${baseUrl}/3.0') 4x" alt="${emote}" title="${emote}"></div>`, range[0], range[1]);
+				let imageStyle = Settings.get('animate-emoji') == 'yes' ? 'default' : 'static'; // TODO: support 'auto'
+				let baseUrl = `https://static-cdn.jtvnw.net/emoticons/v2/${id}/${imageStyle}/dark`;
+				replaceText(text, `<div class="emoticon" style="background-image: image-set(url('${baseUrl}/1.0') 1x,url('${baseUrl}/2.0') 2x,url('${baseUrl}/3.0') 4x" alt="${emote}" title="${emote}"></div>`, range[0], range[1]);
 			}
 		});
 	};
@@ -1082,6 +1093,12 @@ function createStylePreview(style) {
 	styleContainer.appendChild(stylePreview);
 	ui.settings.style.custom.container.appendChild(styleContainer);
 	return stylePreview;
+}
+
+function updateEmoji(field) {
+	let needle = Settings.get('animate-emoji') == 'yes' ? '/static/dark/' : '/default/dark/';
+	let replacement = Settings.get('animate-emoji') == 'yes' ? '/default/dark/' : '/static/dark/';
+	field.style.backgroundImage = field.style.backgroundImage.replace(needle, replacement);
 }
 
 function updateTimestamp(field) {
