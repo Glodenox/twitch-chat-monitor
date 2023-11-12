@@ -142,14 +142,14 @@ body.reverse-order #chat {
   padding-right: 5px;
 }
 
-#chat.align-messages div.notice .chat-user, #chat.align-messages div.highlight .chat-user {
+#chat.align-messages > div.notice .chat-user, #chat.align-messages > div.highlight .chat-user {
   flex-basis: 258px;
 }
 
-#chat.align-messages div {
+#chat.align-messages > div {
   display: flex;
 }
-#chat.align-messages div.subscription {
+#chat.align-messages > div.subscription {
   display: block;
 }
 
