@@ -908,7 +908,7 @@ function addMessage(chatLine, bypass) {
 	}
 	ui.chat.body.appendChild(chatLine);
 	// Calculate height for smooth scrolling
-	scrollReference = scrollDistance += chatLine.scrollHeight;
+	scrollReference = scrollDistance += Math.max(chatLine.scrollHeight, parseInt(Settings.get('font-size')) + 7); // 2 x 3px padding + 1px border = 7
 	if (!Settings.get('new-messages-on-top') && !Settings.get('smooth-scroll')) {
 		ui.chat.container.scrollTop = ui.chat.container.scrollHeight - window.innerHeight;
 	}
