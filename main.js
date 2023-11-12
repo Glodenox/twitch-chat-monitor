@@ -926,7 +926,7 @@ function deleteMessage(messageId) {
 	if (message == null) {
 		var messageToDelete = messageQueue.find(entry => entry[1].id == messageId);
 		if (messageToDelete) {
-			messageToDelete[2] = '<Message deleted>'; // Text will be replaced, but just intended to put it back on one line
+			messageToDelete[2] = '<Message deleted by moderator>'; // Text will be replaced, but just intended to put it back on one line
 			messageToDelete[1].deleted = true;
 		}
 		return;
@@ -935,7 +935,7 @@ function deleteMessage(messageId) {
 		return;
 	}
 	message.parentNode.style.height = (message.parentNode.scrollHeight - 7) + 'px'; // 2 x 3px padding + 1px border = 7
-	message.textContent = '<Message deleted>';
+	message.textContent = '<Message deleted by moderator>';
 	message.classList.add('deleted');
 }
 
