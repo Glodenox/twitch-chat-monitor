@@ -957,7 +957,10 @@ As a last step, all entries in the array with 1 character are transformed into H
 At the end, we join() the character array again, forming a message safe to assign to the innerHTML property.
 */
 function formatMessage(text, emotes) {
-	var message = text.split('');
+	if (Settings.get('new-messages-on-top')) {
+		text = text.replaceAll('^', '⌄');
+	}
+	let message = text.split('');
 	message = formatEmotes(message, emotes);
 	message = formatLinks(message, text);
 	return htmlEntities(message).join('');
