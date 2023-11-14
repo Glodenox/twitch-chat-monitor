@@ -289,6 +289,13 @@ body.reverse-order .notifications {
   top: 10px;
 }
 
+body.show-message-entry:not(.reverse-order) .notifications {
+  bottom: calc(14px + var(--font-size));
+}
+body.show-message-entry.reverse-order .notifications {
+  top: calc(14px + var(--font-size));
+}
+
 .notifications div {
   border: 2px solid #eee;
   border-color: var(--text-color);
@@ -492,10 +499,6 @@ body.show-message-entry:not(.reverse-order) #commands {
 
 body.show-message-entry.reverse-order #commands {
   top: calc(9px + var(--font-size));
-}
-
-body.show-message-entry .notifications {
-  bottom: calc(14px + var(--font-size));
 }
 
 body.show-message-entry:not(.reverse-order) #settings {
