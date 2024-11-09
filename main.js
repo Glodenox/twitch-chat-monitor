@@ -131,7 +131,7 @@ var ui = {
 		},
 		messageHandling: {
 			inlineImages: {
-				body: document.getElementById('settings-inline-images').parentNode.nextElementSibling,
+				body: document.getElementById('settings-inline-images').parentNode.nextElementSibling.nextElementSibling,
 				height: document.getElementById('settings-inline-images-height')
 			},
 			timestamps: document.getElementById('settings-timestamps'),
