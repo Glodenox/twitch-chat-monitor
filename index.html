@@ -112,6 +112,13 @@
           <span class="help" title="More information" data-title="Load the images linked to by other users in chat. Links must end with a known image extension or must point to Giphy or Imgur."></span>
           <div class="subfield hidden"><label>Maximum image size: <input type="number" size="2" max="80" min="5" id="settings-inline-images-height"/>% of available screen height</label></div>
         </div>
+        <div>
+          <label><input type="checkbox" id="settings-inline-videos"/> Play any videos linked to by users</label>
+          <div class="subfield hidden">
+            <label>Maximum image size: <input type="number" size="2" max="80" min="5" id="settings-inline-videos-height"/>% of available screen height</label>
+            <span class="help" title="More information" data-title="Load and play the videos linked to by other users in chat. Links must end with a known video extension. Videos will loop and play muted."></span>
+          </div>
+        </div>
         <div><label><input type="checkbox" id="settings-unfurl-twitter"/> Unfurl Twitter/X links</label></div>
         <div><label><input type="checkbox" id="settings-unfurl-youtube"/> Unfurl YouTube links</label></div>
         <div class="subfield hidden"><label><input type="checkbox" id="settings-play-youtube"/> Show and autoplay YouTube videos</label></div>
@@ -231,6 +238,8 @@ var defaultSettings = {
   'shorten-urls': true,
   'inline-images': true,
   'inline-images-height': '30vh',
+  'inline-videos': true,
+  'inline-videos-height': '30vh',
   'unfurl-twitter': true,
   'unfurl-youtube': true,
   'timestamps': '',

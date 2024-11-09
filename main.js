@@ -1,6 +1,7 @@
 var scrollDistance = 0, // How many pixels are we currently still hiding?
 	scrollReference = 0, // Distance when we started scrolling
 	imageExtensions = ['.jpg', '.jpeg', '.gif', '.png', '.webp', '.av1'],
+	videoExtensions = ['.mp4'],
 	bitLevels = [ 10000, 1000, 500, 100, 1 ],
 	frames = 0,
 	fpsInterval,
@@ -133,6 +134,10 @@ var ui = {
 			inlineImages: {
 				body: document.getElementById('settings-inline-images').parentNode.nextElementSibling,
 				height: document.getElementById('settings-inline-images-height')
+			},
+			inlineVideos: {
+				body: document.getElementById('settings-inline-videos').parentNode.nextElementSibling,
+				height: document.getElementById('settings-inline-videos-height')
 			},
 			timestamps: document.getElementById('settings-timestamps'),
 			highlightUsers: document.getElementById('settings-highlight-users'),
@@ -512,6 +517,17 @@ ui.settings.messageHandling.inlineImages.height.addEventListener('input', (e) =>
 		Settings.set('inline-images-height', height + 'vh');
 	}
 });
+configureToggler('inline-videos', () => ui.settings.messageHandling.inlineVideos.body.classList.toggle('hidden', !Settings.get('inline-videos')));
+if (Settings.get('inline-videos')) {
+	ui.settings.messageHandling.inlineVideos.body.classList.remove('hidden');
+}
+ui.settings.messageHandling.inlineVideos.height.value = Settings.get('inline-videos-height').slice(0, -2); // remove vh unit
+ui.settings.messageHandling.inlineVideos.height.addEventListener('input', (e) => {
+	var height = parseInt(e.target.value);
+	if (!isNaN(height) && e.target.validity.valid) {
+		Settings.set('inline-videos-height', height + 'vh');
+	}
+});
 configureToggler('unfurl-twitter', () => {
 	if (typeof twttr == 'undefined') {
 		var twitterScript = document.createElement('script');
@@ -672,7 +688,7 @@ function processChat(channel, userstate, message) {
 		}
 
 		// Deal with loading user-provided inline images
-		var userImages = Array.from(chatLine.querySelectorAll('img.user-image'));
+		var userImages = Array.from(chatLine.querySelectorAll(['img.user-image', 'video.user-image']));
 		if (userImages.length > 0) {
 			userImages.forEach((userImage) => {
 				if (userImage.complete) { // most likely it was already cached
@@ -691,6 +707,15 @@ function processChat(channel, userstate, message) {
 							return;
 						}
 					}
+					var oldChatLineHeight = chatLine.scrollHeight;
+					userImage.classList.add('loaded');
+					var loadingText = chatLine.querySelector('.image-loading');
+					if (chatLine.querySelector('.user-image:not(.loaded)') == null && loadingText != null) {
+						loadingText.remove();
+					}
+					scrollReference = scrollDistance += Math.max(0, chatLine.scrollHeight - oldChatLineHeight);
+				});
+				userImage.addEventListener('loadedmetadata', () => {
 					var oldChatLineHeight = chatLine.scrollHeight;
 					userImage.classList.add('loaded');
 					var loadingText = chatLine.querySelector('.image-loading');
@@ -1014,6 +1039,14 @@ function formatLinks(text, originalText) {
 					text.push('<br />');
 				}
 				text.push(`<img class="user-image" src="${url}" alt="" />`);
+			}
+		}
+		if (Settings.get('inline-videos')) {
+			if (match[1] && videoExtensions.some((extension) => path.endsWith(extension))) {
+				if (text.indexOf('<br />') == -1) {
+					text.push('<br />');
+				}
+				text.push(`<video class="user-image" src="${url}" alt="" autoplay="true" muted="true" loop="true"/>`);
 			}
 		}
 		if (Settings.get('unfurl-youtube') && (match[3] == 'youtube.com/' || match[3] == 'youtu.be/')) {
