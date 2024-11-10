@@ -1173,7 +1173,7 @@ function ensureHash(text) {
 }
 
 function removeHash(text) {
-	if (text.startsWith('#')) {
+	if (text != undefined && text.startsWith('#')) {
 		return text.substring(1);
 	}
 	return text;
