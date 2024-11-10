@@ -716,7 +716,7 @@ function processChat(channel, userstate, message) {
 			}
 		}
 
-		// Load Twitter messages, if any
+		// Load Twitter/X messages, if any
 		var tweets = Array.from(chatLine.querySelectorAll('div.tweet-embed'));
 		if (tweets.length > 0 && typeof twttr != 'undefined' && twttr.init) {
 			tweets.forEach((tweet) => {
@@ -1025,8 +1025,8 @@ function formatLinks(text, originalText) {
 				text.push(`<img src="https://img.youtube.com/vi/${youtube[3]}/maxresdefault.jpg" class="user-image" alt="YouTube video preview" data-hq="https://img.youtube.com/vi/${youtube[3]}/hqdefault.jpg" data-mq="https://img.youtube.com/vi/${youtube[3]}/mqdefault.jpg" />`);
 			}
 		}
-		if (Settings.get('unfurl-twitter') && match[3] == 'twitter.com/' && match[4] != undefined) {
-			var twitter = /^https?:\/\/(www\.)?twitter\.com.+\/([0-9]+)$/gm.exec(match[0]);
+		if (Settings.get('unfurl-twitter') && (match[3] == 'twitter.com/' || match[3] == 'x.com/') && match[4] != undefined) {
+			var twitter = /^https?:\/\/(www\.)?x\.com.+\/([0-9]+)$/gm.exec(match[0]);
 			if (twitter) {
 				if (text.indexOf('<br />') == -1) {
 					text.push('<br />');
