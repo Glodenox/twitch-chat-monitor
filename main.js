@@ -136,7 +136,7 @@ var ui = {
 				height: document.getElementById('settings-inline-images-height')
 			},
 			inlineVideos: {
-				body: document.getElementById('settings-inline-videos').parentNode.nextElementSibling,
+				body: document.getElementById('settings-inline-videos').parentNode.nextElementSibling.nextElementSibling,
 				height: document.getElementById('settings-inline-videos-height')
 			},
 			timestamps: document.getElementById('settings-timestamps'),
