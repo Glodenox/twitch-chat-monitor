@@ -289,6 +289,9 @@ ui.settings.twitch.identity.username.addEventListener('input', (e) => {
 });
 ui.settings.twitch.identity.token.addEventListener('input', (e) => {
 	let identity = ui.settings.twitch.identity;
+	if (/^[0-9a-z]{30}$/.test(e.target.value)) {
+		e.target.value = "oauth:" + e.target.value;
+	}
 	if (!/^oauth:[0-9a-z]{30}$/.test(e.target.value)) {
 		e.target.setCustomValidity('Invalid token');
 		e.target.reportValidity();
