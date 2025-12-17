@@ -74,12 +74,21 @@ body.reverse-order #chat {
   vertical-align: baseline;
 }
 
-#chat img.user-image {
+#chat video {
+  max-width: 100%;
+  max-height: 50vh;
+  max-height: var(--inline-videos-height);
+  color: inherit;
+  margin: 0;
+  vertical-align: baseline;
+}
+
+#chat .user-image {
   vertical-align: top;
   padding: 4px;
 }
 
-#chat img.user-image:not(.loaded) {
+#chat .user-image:not(.loaded) {
   display: none;
 }
 
