@@ -11,7 +11,6 @@ var scrollDistance = 0, // How many pixels are we currently still hiding?
 	lastMessageTimestamp = 0,
 	unreadMessages = 0;
 
-
 /** Store settings with a local cache. Storing these variables directly in localStorage would remove the variable's type information **/
 var Settings = function() {
 	var transparentBackgroundKeys = ['notice-color', 'highlight-color', 'channel-color'];
